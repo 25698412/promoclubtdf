@@ -4,13 +4,9 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { AdminShell } from '@/components/layout/AdminShell';
-import {
-  FiSearch, FiToggleLeft, FiToggleRight, FiEdit2, FiPlus,
-  FiMapPin, FiStar, FiTag,
-} from 'react-icons/fi';
+import { FiSearch, FiToggleLeft, FiToggleRight, FiEdit2, FiPlus, FiMapPin, FiTag } from 'react-icons/fi';
 
 export default function AdminBusinessesPage() {
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [search, setSearch] = useState('');
@@ -18,6 +14,8 @@ export default function AdminBusinessesPage() {
   useEffect(() => { loadBusinesses(); }, []);
 
   const loadBusinesses = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const { data } = await supabase
       .from('businesses')
       .select('*')
@@ -27,6 +25,8 @@ export default function AdminBusinessesPage() {
   };
 
   const toggleStatus = async (id: string, current: boolean) => {
+    const supabase = createClient();
+    if (!supabase) return;
     await supabase.from('businesses').update({ is_active: !current }).eq('id', id);
     loadBusinesses();
   };
@@ -40,7 +40,6 @@ export default function AdminBusinessesPage() {
   return (
     <AdminShell>
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8 animate-fade-in-up">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Gestión de Locales</h1>
@@ -51,7 +50,6 @@ export default function AdminBusinessesPage() {
           </Link>
         </div>
 
-        {/* Search */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
           <div className="relative">
             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -65,7 +63,6 @@ export default function AdminBusinessesPage() {
           </div>
         </div>
 
-        {/* Table */}
         {loading ? (
           <div className="text-center py-16">
             <div className="w-10 h-10 border-4 border-accent-500 border-t-transparent rounded-full animate-spin mx-auto" />
@@ -114,10 +111,7 @@ export default function AdminBusinessesPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => toggleStatus(b.id, b.is_active)}
-                          className="text-sm text-primary-500 hover:text-primary-700 font-medium transition-colors"
-                        >
+                        <button onClick={() => toggleStatus(b.id, b.is_active)} className="text-sm text-primary-500 hover:text-primary-700 font-medium transition-colors">
                           {b.is_active ? <FiToggleRight size={20} className="text-success" /> : <FiToggleLeft size={20} className="text-gray-400" />}
                         </button>
                         <Link href={`/admin/businesses/${b.id}`} className="text-accent-500 hover:text-accent-600 transition-colors">

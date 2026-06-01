@@ -6,13 +6,14 @@ import { AdminShell } from '@/components/layout/AdminShell';
 import { FiUsers, FiMapPin, FiMail } from 'react-icons/fi';
 
 export default function AdminUsersPage() {
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => { loadUsers(); }, []);
 
   const loadUsers = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const { data } = await supabase
       .from('user_profiles')
       .select('*')
@@ -63,20 +64,12 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <FiMail size={12} className="text-gray-400" />
-                          {u.email || '—'}
-                        </div>
+                        <div className="flex items-center gap-1"><FiMail size={12} className="text-gray-400" />{u.email || '—'}</div>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <FiMapPin size={12} className="text-gray-400" />
-                          {u.city || '—'}
-                        </div>
+                        <div className="flex items-center gap-1"><FiMapPin size={12} className="text-gray-400" />{u.city || '—'}</div>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`badge ${level.badge}`}>{level.label}</span>
-                      </td>
+                      <td className="px-4 py-3"><span className={`badge ${level.badge}`}>{level.label}</span></td>
                       <td className="px-4 py-3 text-sm font-semibold text-primary-500">{u.points ?? 0}</td>
                       <td className="px-4 py-3">
                         <span className={`badge ${u.is_verified_resident ? 'badge-success' : 'badge-warning'}`}>

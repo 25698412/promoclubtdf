@@ -7,7 +7,6 @@ import { AdminShell } from '@/components/layout/AdminShell';
 import { FiPlus, FiEdit2, FiCheck, FiX, FiZap } from 'react-icons/fi';
 
 export default function AdminPromotionsPage() {
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [promotions, setPromotions] = useState<any[]>([]);
   const [filter, setFilter] = useState('all');
@@ -15,6 +14,8 @@ export default function AdminPromotionsPage() {
   useEffect(() => { loadPromotions(); }, [filter]);
 
   const loadPromotions = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     setLoading(true);
     let query = supabase
       .from('promotions')
@@ -29,6 +30,8 @@ export default function AdminPromotionsPage() {
   };
 
   const updateModeration = async (id: string, status: string) => {
+    const supabase = createClient();
+    if (!supabase) return;
     await supabase.from('promotions').update({
       moderation_status: status,
       moderated_at: new Date().toISOString(),
@@ -56,18 +59,12 @@ export default function AdminPromotionsPage() {
           </Link>
         </div>
 
-        {/* Filter Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
           {filters.map(f => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
+            <button key={f.key} onClick={() => setFilter(f.key)}
               className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                filter === f.key
-                  ? 'bg-primary-500 text-white shadow-sm'
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-              }`}
-            >
+                filter === f.key ? 'bg-primary-500 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+              }`}>
               {f.label}
             </button>
           ))}
@@ -91,17 +88,9 @@ export default function AdminPromotionsPage() {
                       <h3 className="font-semibold text-gray-900 truncate">{promo.title}</h3>
                       <p className="text-sm text-gray-500">{promo.businesses?.name}</p>
                       <div className="flex gap-2 mt-2 flex-wrap">
-                        {promo.is_flash && (
-                          <span className="badge badge-warning flex items-center gap-1">
-                            <FiZap size={10} /> Flash
-                          </span>
-                        )}
-                        <span className={`badge ${
-                          promo.moderation_status === 'approved' ? 'badge-success' :
-                          promo.moderation_status === 'rejected' ? 'badge-error' : 'badge-warning'
-                        }`}>
-                          {promo.moderation_status === 'approved' ? 'Aprobada' :
-                           promo.moderation_status === 'rejected' ? 'Rechazada' : 'Pendiente'}
+                        {promo.is_flash && <span className="badge badge-warning flex items-center gap-1"><FiZap size={10} /> Flash</span>}
+                        <span className={`badge ${promo.moderation_status === 'approved' ? 'badge-success' : promo.moderation_status === 'rejected' ? 'badge-error' : 'badge-warning'}`}>
+                          {promo.moderation_status === 'approved' ? 'Aprobada' : promo.moderation_status === 'rejected' ? 'Rechazada' : 'Pendiente'}
                         </span>
                       </div>
                     </div>
@@ -109,16 +98,10 @@ export default function AdminPromotionsPage() {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {promo.moderation_status === 'pending' && (
                       <>
-                        <button
-                          onClick={() => updateModeration(promo.id, 'approved')}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-success-50 text-success rounded-lg text-sm font-medium hover:bg-success-100 transition-colors"
-                        >
+                        <button onClick={() => updateModeration(promo.id, 'approved')} className="flex items-center gap-1.5 px-3 py-1.5 bg-success-50 text-success rounded-lg text-sm font-medium hover:bg-success-100 transition-colors">
                           <FiCheck size={14} /> Aprobar
                         </button>
-                        <button
-                          onClick={() => updateModeration(promo.id, 'rejected')}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-error-50 text-error rounded-lg text-sm font-medium hover:bg-error-100 transition-colors"
-                        >
+                        <button onClick={() => updateModeration(promo.id, 'rejected')} className="flex items-center gap-1.5 px-3 py-1.5 bg-error-50 text-error rounded-lg text-sm font-medium hover:bg-error-100 transition-colors">
                           <FiX size={14} /> Rechazar
                         </button>
                       </>

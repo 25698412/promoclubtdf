@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Button, Input } from '@/components/ui';
+import { Input } from '@/components/ui';
 import { LogoImage } from '@/components/ui/LogoImage';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft } from 'react-icons/fi';
 
@@ -12,7 +12,6 @@ export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,61 +20,41 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const supabase = createClient();
+    if (!supabase) { setError('Servicio no disponible'); return; }
     setLoading(true);
     setError('');
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      router.push('/dashboard');
-    }
-
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setError(error.message); } else { router.push('/dashboard'); }
     setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
+    const supabase = createClient();
+    if (!supabase) { setError('Servicio no disponible'); return; }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
+      options: { redirectTo: `${window.location.origin}/dashboard` },
     });
     if (error) setError(error.message);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background Decorations */}
       <div className="absolute top-20 left-10 w-40 h-40 bg-[#F58220]/20 rounded-full blur-3xl animate-float" />
       <div className="absolute bottom-20 right-10 w-60 h-60 bg-white/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
       <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-[#F58220]/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '0.5s' }} />
-      <div className="absolute bottom-1/3 right-1/4 w-24 h-24 bg-secondary-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
 
-      {/* Back to Home */}
-      <Link
-        href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white transition-colors z-10"
-      >
+      <Link href="/" className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white transition-colors z-10">
         <FiArrowLeft size={18} />
         <span className="hidden sm:inline">Volver al inicio</span>
       </Link>
 
-      {/* Login Card */}
       <div className="relative w-full max-w-md animate-scale-in">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 group">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center border-[3px] border-[#F58220] bg-white overflow-hidden mx-auto transition-all duration-300 group-hover:scale-105"
-              style={{
-                boxShadow: '0 0 30px rgba(245, 130, 32, 0.25), 0 8px 32px rgba(0,0,0,0.15)',
-              }}
-            >
+            <div className="w-20 h-20 rounded-full flex items-center justify-center border-[3px] border-[#F58220] bg-white overflow-hidden mx-auto transition-all duration-300 group-hover:scale-105"
+              style={{ boxShadow: '0 0 30px rgba(245, 130, 32, 0.25), 0 8px 32px rgba(0,0,0,0.15)' }}>
               <LogoImage className="w-[80%] h-[80%] object-contain" fallbackBg="white" />
             </div>
           </Link>
@@ -83,9 +62,7 @@ export default function LoginPage() {
           <p className="text-white/70 mt-2">Iniciá sesión para acceder a tus promociones</p>
         </div>
 
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8">
-          {/* Error Alert */}
           {error && (
             <div className="mb-6 p-4 bg-error-50 border border-error-100 rounded-xl flex items-start gap-3 animate-shake">
               <svg className="w-5 h-5 text-error flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -96,81 +73,40 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleLogin} className="space-y-5">
-            <Input
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              leftIcon={<FiMail size={18} />}
-              required
-            />
-
+            <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@email.com" leftIcon={<FiMail size={18} />} required />
             <div className="relative">
               <Input
-                label="Contraseña"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                label="Contraseña" type={showPassword ? 'text' : 'password'} value={password}
+                onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
                 leftIcon={<FiLock size={18} />}
                 rightIcon={
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600 transition-colors">
                     {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
                   </button>
                 }
                 required
               />
             </div>
-
-            {/* Remember & Forgot */}
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#F58220] focus:ring-[#F58220]" />
                 <span className="text-sm text-gray-600">Recordarme</span>
               </label>
-              <Link href="/forgot-password" className="text-sm text-[#F58220] hover:text-[#d96f15] font-medium transition-colors">
-                ¿Olvidaste tu contraseña?
-              </Link>
+              <Link href="/forgot-password" className="text-sm text-[#F58220] hover:text-[#d96f15] font-medium transition-colors">¿Olvidaste tu contraseña?</Link>
             </div>
-
-            {/* Login Button - Orange like mobile nav */}
-            <button
-              type="submit"
-              disabled={loading}
+            <button type="submit" disabled={loading}
               className="w-full py-3.5 rounded-xl font-bold text-white text-base transition-all duration-300 hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70"
-              style={{
-                background: 'linear-gradient(135deg, #F58220 0%, #e0711a 100%)',
-                boxShadow: '0 4px 15px rgba(245, 130, 32, 0.35)',
-              }}
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                'Iniciar Sesión'
-              )}
+              style={{ background: 'linear-gradient(135deg, #F58220 0%, #e0711a 100%)', boxShadow: '0 4px 15px rgba(245, 130, 32, 0.35)' }}>
+              {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Iniciar Sesión'}
             </button>
           </form>
 
-          {/* Divider */}
           <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-4 text-gray-400">o continuá con</span>
-            </div>
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+            <div className="relative flex justify-center text-sm"><span className="bg-white px-4 text-gray-400">o continuá con</span></div>
           </div>
 
-          {/* Google Login - Full width, prominent */}
-          <button
-            onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3.5 border-2 border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 group"
-          >
+          <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center gap-3 px-4 py-3.5 border-2 border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 group">
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -181,12 +117,9 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Register Link */}
         <p className="text-center mt-8 text-white/80">
           ¿No tenés cuenta?{' '}
-          <Link href="/register" className="text-white font-semibold hover:text-[#F58220] transition-colors">
-            Registrate gratis
-          </Link>
+          <Link href="/register" className="text-white font-semibold hover:text-[#F58220] transition-colors">Registrate gratis</Link>
         </p>
       </div>
     </div>
