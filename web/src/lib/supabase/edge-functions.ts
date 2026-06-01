@@ -78,6 +78,16 @@ export async function checkNearby(latitude: number, longitude: number, radiusKm 
   });
 }
 
+// Membership functions
+export async function createMembershipCheckout(planId: string, businessId: string) {
+  return invokeEdgeFunction<{
+    checkout_url?: string;
+    sandbox_url?: string;
+    preference_id?: string;
+    error?: string;
+  }>('mercadopago-checkout', { plan_id: planId, business_id: businessId });
+}
+
 // Notification functions
 export async function sendPushNotification(userId: string, title: string, body: string, data?: Record<string, unknown>) {
   return invokeEdgeFunction('send-notification', { user_id: userId, title, body, data });

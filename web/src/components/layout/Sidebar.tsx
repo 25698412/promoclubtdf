@@ -13,6 +13,7 @@ import {
   FiUsers,
   FiGift,
   FiBarChart2,
+  FiCreditCard,
   FiSettings,
   FiLogOut,
   FiMenu,
@@ -36,6 +37,7 @@ const menuItems: MenuItem[] = [
   { href: '/admin/verifications', label: 'Aprobación', icon: <FiCheckCircle /> },
   { href: '/admin/map', label: 'Mapa', icon: <FiMapPin /> },
   { href: '/admin/rewards', label: 'Premios', icon: <FiGift /> },
+  { href: '/admin/memberships', label: 'Membresías', icon: <FiCreditCard /> },
   { href: '/admin/analytics', label: 'Métricas', icon: <FiBarChart2 /> },
   { href: '/admin/settings', label: 'Configuración', icon: <FiSettings /> },
 ];

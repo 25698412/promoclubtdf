@@ -262,6 +262,10 @@ CREATE INDEX IF NOT EXISTS idx_rewards_business_id ON rewards(business_id);
 CREATE INDEX IF NOT EXISTS idx_analytics_event_type ON analytics_events(event_type);
 CREATE INDEX IF NOT EXISTS idx_analytics_entity_id ON analytics_events(entity_id);
 CREATE INDEX IF NOT EXISTS idx_analytics_created_at ON analytics_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_membership_plans_slug ON membership_plans(slug);
+CREATE INDEX IF NOT EXISTS idx_membership_plans_is_active ON membership_plans(is_active);
+CREATE INDEX IF NOT EXISTS idx_membership_payments_business_id ON membership_payments(business_id);
+CREATE INDEX IF NOT EXISTS idx_membership_payments_status ON membership_payments(status);
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
@@ -272,6 +276,8 @@ ALTER TABLE points_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE businesses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE promotions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE banners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE membership_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE membership_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rewards ENABLE ROW LEVEL SECURITY;
@@ -494,6 +500,53 @@ CREATE POLICY "Admin manage platform settings" ON platform_settings
   );
 
 -- ============================================
+-- POLICIES - membership_plans
+-- ============================================
+
+CREATE POLICY "Public view active plans" ON membership_plans
+  FOR SELECT USING (is_active = true);
+
+CREATE POLICY "Admin manage plans" ON membership_plans
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM auth.users
+      WHERE auth.users.id = auth.uid()
+      AND auth.users.raw_user_meta_data->>'role' = 'admin'
+    )
+  );
+
+-- ============================================
+-- POLICIES - membership_payments
+-- ============================================
+
+CREATE POLICY "Business view own payments" ON membership_payments
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM businesses
+      WHERE businesses.id = membership_payments.business_id
+      AND businesses.owner_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Business create payments" ON membership_payments
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM businesses
+      WHERE businesses.id = membership_payments.business_id
+      AND businesses.owner_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Admin manage payments" ON membership_payments
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM auth.users
+      WHERE auth.users.id = auth.uid()
+      AND auth.users.raw_user_meta_data->>'role' = 'admin'
+    )
+  );
+
+-- ============================================
 -- DATOS INICIALES
 -- ============================================
 
@@ -501,6 +554,22 @@ CREATE POLICY "Admin manage platform settings" ON platform_settings
 INSERT INTO points_rules (rule_name, points_per_amount, amount_threshold, points_expiry_days) VALUES
   ('Regla estándar', 1, 100, 365)
 ON CONFLICT DO NOTHING;
+
+-- Planes de membresía por defecto
+INSERT INTO membership_plans (name, slug, description, price_ARS, duration_months, benefits, max_promotions, is_featured, display_order) VALUES
+  ('Plata', 'plata', 'Ideal para empezar a promocionar tu negocio',
+    9900, 1,
+    '["5 promociones activas","Aparece en búsquedas","Estadísticas básicas","Soporte por email"]'::jsonb,
+    5, false, 1),
+  ('Oro', 'oro', 'Para negocios que quieren destacar',
+    19900, 1,
+    '["15 promociones activas","Ubicación destacada en el mapa","Promociones flash","Estadísticas avanzadas","Badge dorado","Soporte prioritario"]'::jsonb,
+    15, true, 2),
+  ('Platino', 'platino', 'La experiencia premium para tu negocio',
+    39900, 1,
+    '["Promociones ilimitadas","Posición top en búsquedas","Promociones flash +-banner","Analytics completos","Badge platino","Destacado en homepage","Soporte dedicado 24/7"]'::jsonb,
+    -1, false, 3)
+ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================
 -- CLOUDFLARE R2 (Almacenamiento de archivos)

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
 import { LogoImage } from '@/components/ui/LogoImage';
+import { FiCreditCard } from 'react-icons/fi';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   FiHome, FiTag, FiBarChart2, FiLogOut, FiPlus,
@@ -127,6 +128,7 @@ export default function BusinessPanelPage() {
             {[
               { icon: <FiHome size={18} />, label: 'Dashboard', href: '/business/panel' },
               { icon: <FiTag size={18} />, label: 'Mis Promociones', href: '/business/panel?tab=promos' },
+              { icon: <FiCreditCard size={18} />, label: 'Membresía', href: '/business/membership' },
               { icon: <FiBarChart2 size={18} />, label: 'Estadísticas', href: '/business/panel?tab=stats' },
             ].map((item) => (
               <Link key={item.href} href={item.href}
