@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth-context';
@@ -16,7 +16,7 @@ import {
 
 type TabType = 'dashboard' | 'promos' | 'flash';
 
-export default function BusinessPanelPage() {
+function BusinessPanelContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, profile, loading: authLoading, signOut } = useAuth();
@@ -453,5 +453,17 @@ export default function BusinessPanelPage() {
         </div>
       </div>
     </ErrorBoundary>
+  );
+}
+
+export default function BusinessPanelPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-accent-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <BusinessPanelContent />
+    </Suspense>
   );
 }
