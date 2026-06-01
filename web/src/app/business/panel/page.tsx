@@ -164,7 +164,7 @@ export default function BusinessPanelPage() {
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Mis Promociones</h2>
-                  <Link href="/admin/promotions/new" className="btn-accent text-sm flex items-center gap-1">
+                  <Link href="/business/promotions/new" className="btn-accent text-sm flex items-center gap-1">
                     <FiPlus size={14} /> Nueva
                   </Link>
                 </div>
@@ -186,7 +186,7 @@ export default function BusinessPanelPage() {
                             </div>
                           </div>
                         </div>
-                        <Link href={`/admin/promotions/${promo.id}`} className="p-2 text-accent-500 hover:bg-accent-50 rounded-lg transition-colors">
+                        <Link href={`/business/promotions/new`} className="p-2 text-accent-500 hover:bg-accent-50 rounded-lg transition-colors">
                           <FiEdit2 size={16} />
                         </Link>
                       </div>
@@ -196,7 +196,7 @@ export default function BusinessPanelPage() {
                   <div className="bg-white rounded-xl border border-gray-100 shadow-sm text-center py-12">
                     <FiTag size={40} className="mx-auto mb-3 text-gray-300" />
                     <p className="text-gray-500">No tenés promociones creadas</p>
-                    <Link href="/admin/promotions/new" className="btn-accent text-sm mt-4 inline-flex">Crear primera promoción</Link>
+                    <Link href="/business/promotions/new" className="btn-accent text-sm mt-4 inline-flex">Crear primera promoción</Link>
                   </div>
                 )}
               </div>
