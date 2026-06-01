@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "strict": false,
+    "module": "es_next",
+    "target": "es_next",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "lib": ["deno.window"]
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}
