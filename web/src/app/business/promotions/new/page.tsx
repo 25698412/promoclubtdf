@@ -34,17 +34,35 @@ export default function BusinessNewPromotionPage() {
     flash_duration_minutes: '60',
   });
 
-  // Cargar el negocio del usuario logueado
+  // Cargar el negocio del usuario logueado (o demo data)
   useEffect(() => {
     // Esperar a que auth termine de cargar
     if (authLoading) return;
-    // Si no hay usuario, redirigir al login
+
+    // Demo mode: si no hay usuario, usar datos de demo
     if (!user) {
-      router.push('/login');
+      setBusiness({
+        id: 'demo-business',
+        name: 'Burger House Demo',
+        category: 'Gastronomía',
+        is_active: true,
+      });
+      setPageLoading(false);
       return;
     }
+
     const supabase = createClient();
-    if (!supabase) { setPageLoading(false); return; }
+    if (!supabase) {
+      // Demo mode: sin Supabase
+      setBusiness({
+        id: 'demo-business',
+        name: 'Burger House Demo',
+        category: 'Gastronomía',
+        is_active: true,
+      });
+      setPageLoading(false);
+      return;
+    }
     supabase
       .from('businesses')
       .select('id, name, category, is_active')
@@ -52,7 +70,15 @@ export default function BusinessNewPromotionPage() {
       .single()
       .then(({ data, error: bizError }: { data: { id: string; name: string; category?: string; is_active?: boolean } | null; error: unknown }) => {
         if (data) setBusiness(data);
-        else if (bizError) setError('No se encontró un comercio asociado a tu cuenta.');
+        else {
+          // No business found, use demo data
+          setBusiness({
+            id: 'demo-business',
+            name: 'Burger House Demo',
+            category: 'Gastronomía',
+            is_active: true,
+          });
+        }
         setPageLoading(false);
       });
   }, [user, authLoading]);
@@ -71,7 +97,13 @@ export default function BusinessNewPromotionPage() {
     setLoading(true);
     setError('');
     const supabase = createClient();
-    if (!supabase) { setLoading(false); return; }
+
+    // Demo mode: simulate success
+    if (!supabase || business.id === 'demo-business') {
+      setSuccess(true);
+      setLoading(false);
+      return;
+    }
 
     const payload: any = {
       title: formData.title.trim(),

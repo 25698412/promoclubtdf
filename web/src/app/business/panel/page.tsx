@@ -29,7 +29,24 @@ export default function BusinessPanelPage() {
 
   const loadData = async () => {
     const supabase = createClient();
-    if (!supabase) {
+    if (!supabase || !user) {
+      // Demo mode: show sample data
+      setBusiness({
+        id: 'demo-business',
+        name: 'Burger House Demo',
+        category: 'Gastronomía',
+        address: 'Av. San Martín 456',
+        city: 'Ushuaia',
+        phone: '+54 2901 555-1234',
+        is_active: true,
+        is_founder: true,
+      });
+      setPromotions([
+        { id: 'p1', title: '50% OFF en Hamburguesas', discount_percentage: 50, is_active: true, is_flash: false, moderation_status: 'approved', created_at: new Date().toISOString() },
+        { id: 'p2', title: '⚡ Flash: 2x1 en Bebidas', discount_percentage: null, is_active: true, is_flash: true, flash_duration_minutes: 60, moderation_status: 'approved', created_at: new Date().toISOString() },
+        { id: 'p3', title: '30% OFF en Postres', discount_percentage: 30, is_active: true, is_flash: false, moderation_status: 'pending', created_at: new Date().toISOString() },
+      ]);
+      setStats({ views: 1250, redemptions: 342, newCustomers: 89 });
       setLoading(false);
       return;
     }
@@ -65,11 +82,29 @@ export default function BusinessPanelPage() {
         redemptions: redemptionsRes.count || 0,
         newCustomers: customersRes.count || 0,
       });
+    } else {
+      // No business found for this user, show demo data
+      setBusiness({
+        id: 'demo-business',
+        name: 'Burger House Demo',
+        category: 'Gastronomía',
+        address: 'Av. San Martín 456',
+        city: 'Ushuaia',
+        phone: '+54 2901 555-1234',
+        is_active: true,
+        is_founder: true,
+      });
+      setPromotions([
+        { id: 'p1', title: '50% OFF en Hamburguesas', discount_percentage: 50, is_active: true, is_flash: false, moderation_status: 'approved', created_at: new Date().toISOString() },
+        { id: 'p2', title: '⚡ Flash: 2x1 en Bebidas', discount_percentage: null, is_active: true, is_flash: true, flash_duration_minutes: 60, moderation_status: 'approved', created_at: new Date().toISOString() },
+        { id: 'p3', title: '30% OFF en Postres', discount_percentage: 30, is_active: true, is_flash: false, moderation_status: 'pending', created_at: new Date().toISOString() },
+      ]);
+      setStats({ views: 1250, redemptions: 342, newCustomers: 89 });
     }
     setLoading(false);
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-accent-500 border-t-transparent rounded-full animate-spin" />
