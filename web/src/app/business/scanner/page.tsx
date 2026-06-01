@@ -26,7 +26,7 @@ export default function BusinessScannerPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) { router.push('/login'); return; }
+    // Demo mode: no login required
     loadBusiness();
   }, [user, authLoading]);
 
@@ -42,8 +42,8 @@ export default function BusinessScannerPage() {
 
   const loadBusiness = async () => {
     const supabase = createClient();
-    if (!supabase) {
-      setBusiness({ id: 'demo', name: 'Mi Comercio' });
+    if (!supabase || !user) {
+      setBusiness({ id: 'demo', name: 'Mi Comercio Demo' });
       setLoading(false);
       return;
     }
@@ -52,7 +52,7 @@ export default function BusinessScannerPage() {
       .select('id, name')
       .eq('owner_id', user?.id)
       .single();
-    setBusiness(biz);
+    setBusiness(biz || { id: 'demo', name: 'Mi Comercio Demo' });
     setLoading(false);
   };
 
@@ -110,9 +110,10 @@ export default function BusinessScannerPage() {
     setValidating(true);
     setResult(null);
 
-    // Demo mode
-    if (!createClient()) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    // Demo mode: no Supabase or no session
+    const supabase = createClient();
+    if (!supabase) {
+      await new Promise(resolve => setTimeout(resolve, 1200));
       setResult({
         valid: true,
         message: `Cupón "${token.toUpperCase()}" validado (demo)`,
@@ -123,9 +124,19 @@ export default function BusinessScannerPage() {
     }
 
     try {
-      const supabase = createClient();
-      const { data: { session } } = await supabase!.auth.getSession();
-      const response = await fetch(`${supabase!.supabaseUrl}/functions/v1/coupon-validate`, {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        // No session = demo mode
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        setResult({
+          valid: true,
+          message: `Cupón "${token.toUpperCase()}" validado (demo)`,
+          points_awarded: 12,
+        });
+        setValidating(false);
+        return;
+      }
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/coupon-validate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
