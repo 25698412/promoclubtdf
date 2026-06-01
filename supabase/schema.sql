@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   is_verified_resident BOOLEAN DEFAULT false,
   -- Push notification token
   push_token TEXT,
+  -- Geolocalización y notificaciones
+  gps_enabled BOOLEAN DEFAULT false,
+  geofence_radius_km DECIMAL(4,2) DEFAULT 1.5,
   -- Sistema de puntos y niveles
   points INTEGER DEFAULT 0,
   level TEXT DEFAULT 'bronze' CHECK (level IN ('bronze', 'silver', 'gold')),

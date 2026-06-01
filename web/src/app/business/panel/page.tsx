@@ -24,11 +24,8 @@ export default function BusinessPanelPage() {
   const [stats, setStats] = useState({ views: 0, redemptions: 0, newCustomers: 0 });
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-    if (user) loadData();
+    // Allow demo mode - load data regardless of auth
+    loadData();
   }, [user, authLoading]);
 
   const loadData = async () => {

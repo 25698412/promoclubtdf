@@ -113,6 +113,7 @@ export default function AdminDashboard() {
           userName={profile?.first_name || 'Admin'}
           onLogout={handleLogout}
           variant="admin"
+          homeLink="/"
         />
 
         {/* Content */}

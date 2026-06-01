@@ -10,7 +10,7 @@ import { PromotionCard, LoadingSkeleton } from '@/components/features';
 import { MobileNavBar } from '@/components/layout/MobileNavBar';
 import {
   FiArrowLeft, FiUser, FiMapPin, FiPhone, FiMail, FiLogOut, FiStar, FiTag,
-  FiShoppingBag, FiEdit2, FiHeart, FiGift, FiZap, FiClock, FiTrendingUp,
+  FiShoppingBag, FiEdit2, FiHeart, FiGift, FiZap, FiClock, FiTrendingUp, FiNavigation,
 } from 'react-icons/fi';
 
 export default function ProfilePage() {
@@ -24,6 +24,8 @@ export default function ProfilePage() {
   const [banners, setBanners] = useState<any[]>([]);
   const [recentCoupons, setRecentCoupons] = useState<any[]>([]);
   const [favoritesCount, setFavoritesCount] = useState(0);
+  const [gpsEnabled, setGpsEnabled] = useState(false);
+  const [geofenceRadius, setGeofenceRadius] = useState(1.5);
 
   useEffect(() => {
     loadData();
@@ -39,6 +41,8 @@ export default function ProfilePage() {
       const { data: profileData } = await supabase
         .from('user_profiles').select('*').eq('id', session.user.id).single();
       setProfile(profileData);
+      setGpsEnabled(profileData?.gps_enabled || false);
+      setGeofenceRadius(profileData?.geofence_radius_km || 1.5);
 
       // Load user's recent coupons
       const { data: coupons } = await supabase
@@ -57,6 +61,8 @@ export default function ProfilePage() {
       // Demo mode
       setUser({ email: 'demo@promoclubtdf.com' });
       setProfile({ first_name: 'Usuario', last_name: 'Demo', points: 350, level: 'bronze', phone: '+54 9 2901 123456', city: 'Ushuaia' });
+      setGpsEnabled(false);
+      setGeofenceRadius(1.5);
     }
 
     // Load public data
@@ -80,6 +86,21 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/');
+  };
+
+  const toggleGps = async () => {
+    const newValue = !gpsEnabled;
+    setGpsEnabled(newValue);
+    if (user) {
+      await supabase.from('user_profiles').update({ gps_enabled: newValue }).eq('id', user.id);
+    }
+  };
+
+  const updateGeofenceRadius = async (value: number) => {
+    setGeofenceRadius(value);
+    if (user) {
+      await supabase.from('user_profiles').update({ geofence_radius_km: value }).eq('id', user.id);
+    }
   };
 
   const quickActions = [
@@ -149,6 +170,37 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* GPS & Location Settings - Inline below profile */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <FiNavigation className="text-accent-500" size={16} />
+              <span className="text-sm font-semibold text-gray-900">Alertas por cercanía</span>
+            </div>
+            <button
+              onClick={toggleGps}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${gpsEnabled ? 'bg-success' : 'bg-gray-300'}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 ${gpsEnabled ? 'translate-x-6' : ''}`} />
+            </button>
+          </div>
+          {gpsEnabled && (
+            <div className="mt-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-500">Radio de detección</span>
+                <span className="text-xs font-bold text-accent-500">{geofenceRadius} km</span>
+              </div>
+              <input
+                type="range" min="0.5" max="5" step="0.5"
+                value={geofenceRadius}
+                onChange={(e) => updateGeofenceRadius(parseFloat(e.target.value))}
+                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent-500"
+              />
+              <p className="text-xs text-gray-400 mt-1">Te notificaremos cuando estés a {geofenceRadius} km de locales con promos</p>
+            </div>
+          )}
         </div>
 
         {/* Stats */}
