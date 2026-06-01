@@ -23,7 +23,7 @@ export default function AdminNewRewardPage() {
   });
 
   useEffect(() => {
-    supabase.from('businesses').select('id, name').order('name').then(({ data }) => {
+    supabase.from('businesses').select('id, name').order('name').then(({ data }: { data: { id: string; name: string }[] | null }) => {
       if (data) setBusinesses(data);
     });
   }, []);

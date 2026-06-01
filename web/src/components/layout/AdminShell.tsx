@@ -18,7 +18,7 @@ export function AdminShell({ children }: AdminShellProps) {
 
   useEffect(() => {
     // MODO DEMO: Acceso público
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: { user: { user_metadata?: Record<string, string>; email?: string } } | null } }) => {
       if (session && session.user.user_metadata?.role === 'admin') {
         setUserName(
           session.user.user_metadata?.first_name ||

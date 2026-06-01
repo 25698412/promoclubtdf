@@ -22,7 +22,7 @@ export default function AdminNewPromotionPage() {
   });
 
   useEffect(() => {
-    supabase.from('businesses').select('id, name').then(({ data }) => {
+    supabase.from('businesses').select('id, name').then(({ data }: { data: { id: string; name: string }[] | null }) => {
       if (data) setBusinesses(data);
     });
   }, []);

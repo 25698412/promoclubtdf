@@ -42,7 +42,7 @@ export default function BusinessNewPromotionPage() {
       .select('id, name, category, is_active')
       .eq('owner_id', user.id)
       .single()
-      .then(({ data, error: bizError }) => {
+      .then(({ data, error: bizError }: { data: { id: string; name: string; category?: string; is_active?: boolean } | null; error: unknown }) => {
         if (data) setBusiness(data);
         else if (bizError) setError('No se encontró un comercio asociado a tu cuenta.');
         setPageLoading(false);

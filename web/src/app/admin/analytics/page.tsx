@@ -28,7 +28,7 @@ export default function AdminAnalyticsPage() {
       supabase.from('promotions').select('id, title, is_flash').eq('moderation_status', 'approved'),
     ]);
 
-    const events = eventsRes.data || [];
+    const events: { event_type?: string; created_at?: string; entity_id?: string }[] = eventsRes.data || [];
     setMetrics({
       views: events.filter((e) => e.event_type?.includes('view')).length,
       clicks: events.filter((e) => e.event_type?.includes('click')).length,
@@ -70,7 +70,7 @@ export default function AdminAnalyticsPage() {
     }, {});
     const topIds = Object.entries(promoCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
     setTopPromos(topIds.map(([id, count]) => {
-      const promo = (topPromosRes.data || []).find((p) => p.id === id);
+      const promo = (topPromosRes.data || []).find((p: { id: string; title?: string; is_flash?: boolean }) => p.id === id);
       return { name: promo?.title || 'Promoción', views: count, is_flash: promo?.is_flash };
     }));
 
