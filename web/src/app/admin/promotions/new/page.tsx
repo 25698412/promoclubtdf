@@ -16,7 +16,7 @@ export default function AdminNewPromotionPage() {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     title: '', description: '', business_id: '', discount_type: 'percentage',
-    discount_value: '', start_date: '', end_date: '', terms: '',
+    discount_value: '', price_ARS: '', start_date: '', end_date: '', terms: '',
     max_redemptions: '', category: '',
   });
 
@@ -44,6 +44,8 @@ export default function AdminNewPromotionPage() {
       business_id: formData.business_id || null,
       discount_type: formData.discount_type,
       discount_value: parseFloat(formData.discount_value),
+      discount_percentage: formData.discount_type === 'percentage' ? parseFloat(formData.discount_value) : null,
+      price_ARS: formData.price_ARS ? parseFloat(formData.price_ARS) : null,
       start_date: formData.start_date || null,
       end_date: formData.end_date || null,
       terms: formData.terms,
@@ -93,7 +95,7 @@ export default function AdminNewPromotionPage() {
                 <p className="text-gray-500 mb-6">La promoción ya está visible para los usuarios</p>
                 <div className="flex gap-3 justify-center">
                   <Link href="/admin/promotions" className="btn-accent">Ver Promociones</Link>
-                  <button onClick={() => { setSuccess(false); setFormData({ title: '', description: '', business_id: '', discount_type: 'percentage', discount_value: '', start_date: '', end_date: '', terms: '', max_redemptions: '', category: '' }); }}
+                  <button onClick={() => { setSuccess(false); setFormData({ title: '', description: '', business_id: '', discount_type: 'percentage', discount_value: '', price_ARS: '', start_date: '', end_date: '', terms: '', max_redemptions: '', category: '' }); }}
                     className="btn-outline-accent">Crear Otra</button>
                 </div>
               </Card>
@@ -163,6 +165,15 @@ export default function AdminNewPromotionPage() {
                         placeholder={formData.discount_type === 'percentage' ? 'Ej: 50' : 'Ej: 5000'}
                         className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent-500 text-sm" />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Precio Original (ARS) — para cálculo de puntos</label>
+                    <input type="number" name="price_ARS" value={formData.price_ARS} onChange={handleChange}
+                      placeholder="Ej: 5000"
+                      min="0" step="0.01"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent-500 text-sm" />
+                    <p className="text-xs text-gray-400 mt-1">Se usa con las reglas de puntos del admin (ej: cada $100 = 1 punto). Si está vacío, se otorgan 10 puntos fijos.</p>
                   </div>
 
                   <div className="flex items-center gap-3 pb-2 pt-2 border-b border-gray-100">

@@ -112,8 +112,9 @@ serve(async (req: Request) => {
     // Award points to the user
     const userId = coupon.user_id;
     const discountPercentage = coupon.promotions?.discount_percentage || 0;
+    const priceARS = parseFloat(coupon.promotions?.price_ARS) || 0;
 
-    // Calculate points based on rules
+    // Calculate points based on configurable rules
     const { data: rules } = await supabase
       .from('points_rules')
       .select('*')
@@ -121,12 +122,23 @@ serve(async (req: Request) => {
       .limit(1)
       .single();
 
-    const pointsPerAmount = rules?.points_per_amount || 1;
-    const amountThreshold = rules?.amount_threshold || 100;
-    // Award base points + bonus for higher discounts
-    const basePoints = pointsPerAmount * 10; // Base 10 points per redemption
-    const discountBonus = Math.floor(discountPercentage / 10); // 1 point per 10% discount
-    const totalPoints = basePoints + discountBonus;
+    const pointsPerAmount = rules?.points_per_amount || 1;   // ej: 1 punto...
+    const amountThreshold = rules?.amount_threshold || 100;   // ...cada $100 ARS
+
+    let totalPoints = 0;
+    if (priceARS > 0 && amountThreshold > 0) {
+      // Calculate the actual price after discount
+      const actualPrice = discountPercentage > 0
+        ? priceARS * (1 - discountPercentage / 100)
+        : priceARS;
+      // Points = (actual_price / threshold) * points_per_amount
+      totalPoints = Math.floor((actualPrice / amountThreshold) * pointsPerAmount);
+      // Minimum 1 point per redemption
+      totalPoints = Math.max(totalPoints, 1);
+    } else {
+      // Fallback: flat 10 points per redemption when no price is set
+      totalPoints = 10;
+    }
 
     // Add points to user profile
     const { data: userProfile } = await supabase

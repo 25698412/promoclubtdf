@@ -79,6 +79,8 @@ CREATE TABLE IF NOT EXISTS promotions (
   discount_percentage INTEGER,
   discount_text TEXT,
   image_url TEXT,
+  -- Precio original en ARS (para cálculo de puntos)
+  price_ARS DECIMAL(12,2),
   -- Ofertas Flash
   is_flash BOOLEAN DEFAULT false,
   flash_duration_minutes INTEGER, -- ej: 30 minutos

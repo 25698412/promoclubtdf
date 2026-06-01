@@ -25,6 +25,7 @@ export default function BusinessNewPromotionPage() {
     description: '',
     discount_type: 'percentage',
     discount_percentage: '',
+    price_ARS: '',
     valid_from: '',
     valid_until: '',
     terms: '',
@@ -85,6 +86,9 @@ export default function BusinessNewPromotionPage() {
     if (formData.discount_percentage) {
       payload.discount_percentage = parseFloat(formData.discount_percentage);
     }
+    if (formData.price_ARS) {
+      payload.price_ARS = parseFloat(formData.price_ARS);
+    }
     if (formData.valid_from) payload.valid_from = formData.valid_from;
     if (formData.valid_until) payload.valid_until = formData.valid_until;
     if (formData.terms.trim()) payload.terms = formData.terms.trim();
@@ -107,7 +111,7 @@ export default function BusinessNewPromotionPage() {
     setSuccess(false);
     setFormData({
       title: '', description: '', discount_type: 'percentage',
-      discount_percentage: '', valid_from: '', valid_until: '',
+      discount_percentage: '', price_ARS: '', valid_from: '', valid_until: '',
       terms: '', max_redemptions: '', is_flash: false, flash_duration_minutes: '60',
     });
   };
@@ -266,6 +270,19 @@ export default function BusinessNewPromotionPage() {
                   />
                 </div>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Precio Original (ARS)
+              </label>
+              <input
+                type="number" name="price_ARS" value={formData.price_ARS}
+                onChange={handleChange} min="0" step="0.01"
+                placeholder="Ej: 5000"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent-500 text-sm"
+              />
+              <p className="text-xs text-gray-400 mt-1">Se usa para calcular los puntos del cliente según las reglas del admin (ej: cada $100 = 1 punto).</p>
             </div>
 
             <div>
