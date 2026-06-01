@@ -12,7 +12,7 @@ import {
 
 export default function BusinessNewPromotionPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [business, setBusiness] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -35,7 +35,13 @@ export default function BusinessNewPromotionPage() {
 
   // Cargar el negocio del usuario logueado
   useEffect(() => {
-    if (!user) return;
+    // Esperar a que auth termine de cargar
+    if (authLoading) return;
+    // Si no hay usuario, redirigir al login
+    if (!user) {
+      router.push('/login');
+      return;
+    }
     const supabase = createClient();
     if (!supabase) { setPageLoading(false); return; }
     supabase
@@ -48,7 +54,7 @@ export default function BusinessNewPromotionPage() {
         else if (bizError) setError('No se encontró un comercio asociado a tu cuenta.');
         setPageLoading(false);
       });
-  }, [user]);
+  }, [user, authLoading]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
