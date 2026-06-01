@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
@@ -14,14 +14,22 @@ import {
   FiEdit2, FiEye, FiCamera, FiZap, FiClock,
 } from 'react-icons/fi';
 
+type TabType = 'dashboard' | 'promos' | 'flash';
+
 export default function BusinessPanelPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, profile, loading: authLoading, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [business, setBusiness] = useState<any>(null);
   const [promotions, setPromotions] = useState<any[]>([]);
   const [stats, setStats] = useState({ views: 0, redemptions: 0, newCustomers: 0 });
+
+  const activeTab: TabType = (searchParams.get('tab') as TabType) || 'dashboard';
+  const setTab = (tab: TabType) => {
+    router.push(`/business/panel?tab=${tab}`);
+  };
 
   useEffect(() => {
     loadData();
@@ -160,23 +168,31 @@ export default function BusinessPanelPage() {
           )}
 
           <nav className="flex-1 px-3 py-4 space-y-1">
-            {[
-              { icon: <FiHome size={18} />, label: 'Dashboard', href: '/business/panel' },
-              { icon: <FiTag size={18} />, label: 'Mis Promociones', href: '/business/panel?tab=promos' },
-              { icon: <FiZap size={18} />, label: 'Promociones Flash', href: '/business/panel?tab=flash', highlight: true },
-              { icon: <FiCamera size={18} />, label: 'Escanear QR', href: '/business/scanner' },
-              { icon: <FiCreditCard size={18} />, label: 'Membresía', href: '/business/membership' },
-              { icon: <FiBarChart2 size={18} />, label: 'Estadísticas', href: '/business/panel?tab=stats' },
-            ].map((item) => (
-              <Link key={item.href} href={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                  (item as any).highlight
-                    ? 'text-yellow-300 hover:text-yellow-200 hover:bg-yellow-500/10 font-medium'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
+            {([
+              { icon: <FiHome size={18} />, label: 'Dashboard', tab: 'dashboard' as TabType },
+              { icon: <FiTag size={18} />, label: 'Mis Promociones', tab: 'promos' as TabType },
+              { icon: <FiZap size={18} />, label: 'Promociones Flash', tab: 'flash' as TabType, highlight: true },
+            ]).map((item) => (
+              <button key={item.tab} onClick={() => { setTab(item.tab); setSidebarOpen(false); }}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors w-full text-left ${
+                  activeTab === item.tab
+                    ? 'bg-white/20 text-white font-medium'
+                    : item.highlight
+                      ? 'text-yellow-300 hover:text-yellow-200 hover:bg-yellow-500/10 font-medium'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}>
                 {item.icon} {item.label}
-              </Link>
+              </button>
             ))}
+            <div className="border-t border-white/10 my-2" />
+            <Link href="/business/scanner" onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+              <FiCamera size={18} /> Escanear QR
+            </Link>
+            <Link href="/business/membership" onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+              <FiCreditCard size={18} /> Membresía
+            </Link>
           </nav>
 
           <div className="px-3 py-4 border-t border-white/10">
@@ -199,156 +215,239 @@ export default function BusinessPanelPage() {
 
           <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
             <div className="max-w-7xl mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                {statCards.map((card) => (
-                  <div key={card.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-                    <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center ${card.color} mb-3`}>{card.icon}</div>
-                    <p className="text-2xl font-bold text-gray-900">{card.value}</p>
-                    <p className="text-sm text-gray-500 mt-1">{card.label}</p>
-                  </div>
-                ))}
-              </div>
 
-              {/* Flash Promotions Quick Action */}
-              <div className="mb-8 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl border border-yellow-200 p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                      <FiZap size={24} />
+              {/* ══════════ DASHBOARD TAB ══════════ */}
+              {activeTab === 'dashboard' && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                    {statCards.map((card) => (
+                      <div key={card.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                        <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center ${card.color} mb-3`}>{card.icon}</div>
+                        <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+                        <p className="text-sm text-gray-500 mt-1">{card.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Flash Quick Action */}
+                  <div className="mb-8 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl border border-yellow-200 p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                          <FiZap size={24} />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-900">⚡ Promociones Flash</h3>
+                          <p className="text-sm text-gray-600 mt-0.5">
+                            Creá ofertas por tiempo limitado para generar urgencia.
+                          </p>
+                          {promotions.filter(p => p.is_flash && p.is_active).length > 0 && (
+                            <p className="text-xs text-yellow-700 mt-1 font-medium">
+                              <FiClock size={10} className="inline -mt-0.5" /> {promotions.filter(p => p.is_flash && p.is_active).length} flash activa(s)
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <button onClick={() => setTab('flash')}
+                        className="px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all text-sm flex items-center gap-2 shadow-md whitespace-nowrap">
+                        <FiZap size={14} /> Ver Flash
+                      </button>
                     </div>
+                  </div>
+
+                  {/* Recent Promotions */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-semibold text-gray-900">Promociones Recientes</h2>
+                      <button onClick={() => setTab('promos')} className="text-sm text-accent-500 font-medium hover:text-accent-600">Ver todas →</button>
+                    </div>
+                    {promotions.length > 0 ? (
+                      <div className="space-y-3">
+                        {promotions.slice(0, 3).map((promo) => (
+                          <div key={promo.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold ${
+                                promo.is_flash ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' : 'bg-accent-50 text-accent-500'
+                              }`}>
+                                {promo.is_flash ? <FiZap size={18} /> : (promo.discount_percentage ? `-${promo.discount_percentage}%` : '🎯')}
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-gray-900 text-sm">{promo.title}</h3>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className={`badge ${promo.is_active ? 'badge-success' : 'badge-error'}`}>
+                                    {promo.is_active ? 'Activa' : 'Inactiva'}
+                                  </span>
+                                  {promo.is_flash && <span className="badge badge-warning">⚡ Flash</span>}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-white rounded-xl border border-gray-100 shadow-sm text-center py-8">
+                        <FiTag size={32} className="mx-auto mb-2 text-gray-300" />
+                        <p className="text-gray-500 text-sm">No tenés promociones creadas</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Business Info */}
+                  {business && (
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                      <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Local</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div><span className="text-gray-500">Nombre:</span> <span className="font-medium">{business.name}</span></div>
+                        <div><span className="text-gray-500">Categoría:</span> <span className="font-medium">{business.category}</span></div>
+                        <div><span className="text-gray-500">Dirección:</span> <span className="font-medium">{business.address}</span></div>
+                        <div><span className="text-gray-500">Ciudad:</span> <span className="font-medium">{business.city}</span></div>
+                        <div><span className="text-gray-500">Teléfono:</span> <span className="font-medium">{business.phone || '—'}</span></div>
+                        <div><span className="text-gray-500">Estado:</span> <span className={`badge ${business.is_active ? 'badge-success' : 'badge-error'}`}>{business.is_active ? 'Activo' : 'Inactivo'}</span></div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ══════════ PROMOS TAB ══════════ */}
+              {activeTab === 'promos' && (
+                <>
+                  <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="font-bold text-gray-900">⚡ Promociones Flash</h3>
-                      <p className="text-sm text-gray-600 mt-0.5">
-                        Creá ofertas por tiempo limitado para generar urgencia y atraer más clientes.
-                      </p>
-                      {promotions.filter(p => p.is_flash && p.is_active).length > 0 && (
-                        <p className="text-xs text-yellow-700 mt-1 font-medium">
-                          <FiClock size={10} className="inline -mt-0.5" /> {promotions.filter(p => p.is_flash && p.is_active).length} flash activa(s)
-                        </p>
-                      )}
+                      <h2 className="text-2xl font-bold text-gray-900">Mis Promociones</h2>
+                      <p className="text-sm text-gray-500 mt-1">{promotions.length} promoción{promotions.length !== 1 ? 'es' : ''}</p>
+                    </div>
+                    <Link href="/business/promotions/new" className="btn-accent text-sm flex items-center gap-1">
+                      <FiPlus size={14} /> Nueva Promoción
+                    </Link>
+                  </div>
+                  {promotions.length > 0 ? (
+                    <div className="space-y-3">
+                      {promotions.map((promo) => (
+                        <div key={promo.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold ${
+                              promo.is_flash ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' : 'bg-accent-50 text-accent-500'
+                            }`}>
+                              {promo.is_flash ? <FiZap size={18} /> : (promo.discount_percentage ? `-${promo.discount_percentage}%` : '🎯')}
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-900 text-sm">{promo.title}</h3>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <span className={`badge ${promo.is_active ? 'badge-success' : 'badge-error'}`}>
+                                  {promo.is_active ? 'Activa' : 'Inactiva'}
+                                </span>
+                                {promo.is_flash && <span className="badge badge-warning">⚡ Flash</span>}
+                                <span className={`text-xs ${
+                                  promo.moderation_status === 'approved' ? 'text-green-600' :
+                                  promo.moderation_status === 'rejected' ? 'text-red-500' : 'text-yellow-600'
+                                }`}>
+                                  {promo.moderation_status === 'approved' ? '✓ Aprobada' :
+                                   promo.moderation_status === 'rejected' ? '✗ Rechazada' : '⏳ Pendiente'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <Link href={`/business/promotions/new`} className="p-2 text-accent-500 hover:bg-accent-50 rounded-lg transition-colors">
+                            <FiEdit2 size={16} />
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm text-center py-12">
+                      <FiTag size={40} className="mx-auto mb-3 text-gray-300" />
+                      <p className="text-gray-500">No tenés promociones creadas</p>
+                      <Link href="/business/promotions/new" className="btn-accent text-sm mt-4 inline-flex">Crear primera promoción</Link>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ══════════ FLASH TAB ══════════ */}
+              {activeTab === 'flash' && (
+                <>
+                  {/* Flash Quick Action */}
+                  <div className="mb-8 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl border border-yellow-200 p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                          <FiZap size={24} />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-900">⚡ Crear Promoción Flash</h3>
+                          <p className="text-sm text-gray-600 mt-0.5">
+                            Ofertas por tiempo limitado que generan urgencia y atraen más clientes.
+                          </p>
+                          {promotions.filter(p => p.is_flash && p.is_active).length > 0 && (
+                            <p className="text-xs text-yellow-700 mt-1 font-medium">
+                              <FiClock size={10} className="inline -mt-0.5" /> {promotions.filter(p => p.is_flash && p.is_active).length} flash activa(s)
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Link href="/business/promotions/new"
+                        className="px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all text-sm flex items-center gap-2 shadow-md whitespace-nowrap">
+                        <FiZap size={14} /> Crear Flash
+                      </Link>
                     </div>
                   </div>
-                  <Link
-                    href="/business/promotions/new"
-                    className="px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all text-sm flex items-center gap-2 shadow-md whitespace-nowrap"
-                  >
-                    <FiZap size={14} /> Crear Flash
-                  </Link>
-                </div>
-              </div>
 
-              {/* Flash Promotions Active */}
-              {promotions.filter(p => p.is_flash).length > 0 && (
-                <div className="mb-8">
                   <div className="flex items-center gap-2 mb-4">
                     <FiZap size={18} className="text-yellow-500" />
-                    <h2 className="text-lg font-semibold text-gray-900">Promociones Flash</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">Todas las Promociones Flash</h2>
                     <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">
                       {promotions.filter(p => p.is_flash).length}
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    {promotions.filter(p => p.is_flash).map((promo) => (
-                      <div key={promo.id} className="bg-white rounded-xl border border-yellow-200 shadow-sm p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center text-white font-bold shadow-sm">
-                            <FiZap size={20} />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 text-sm">{promo.title}</h3>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              <span className={`badge ${promo.is_active ? 'badge-success' : 'badge-error'}`}>
-                                {promo.is_active ? 'Activa' : 'Inactiva'}
-                              </span>
-                              <span className={`badge ${
-                                promo.moderation_status === 'approved' ? 'badge-success' :
-                                promo.moderation_status === 'rejected' ? 'badge-error' : 'badge-warning'
-                              }`}>
-                                {promo.moderation_status === 'approved' ? 'Aprobada' :
-                                 promo.moderation_status === 'rejected' ? 'Rechazada' : '⏳ Pendiente'}
-                              </span>
-                              {promo.flash_duration_minutes && (
-                                <span className="text-xs text-gray-400 flex items-center gap-1">
-                                  <FiClock size={10} /> {promo.flash_duration_minutes} min
+
+                  {promotions.filter(p => p.is_flash).length > 0 ? (
+                    <div className="space-y-3">
+                      {promotions.filter(p => p.is_flash).map((promo) => (
+                        <div key={promo.id} className="bg-white rounded-xl border border-yellow-200 shadow-sm p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center text-white font-bold shadow-sm">
+                              <FiZap size={20} />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-900 text-sm">{promo.title}</h3>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <span className={`badge ${promo.is_active ? 'badge-success' : 'badge-error'}`}>
+                                  {promo.is_active ? 'Activa' : 'Inactiva'}
                                 </span>
-                              )}
+                                <span className={`badge ${
+                                  promo.moderation_status === 'approved' ? 'badge-success' :
+                                  promo.moderation_status === 'rejected' ? 'badge-error' : 'badge-warning'
+                                }`}>
+                                  {promo.moderation_status === 'approved' ? 'Aprobada' :
+                                   promo.moderation_status === 'rejected' ? 'Rechazada' : '⏳ Pendiente'}
+                                </span>
+                                {promo.flash_duration_minutes && (
+                                  <span className="text-xs text-gray-400 flex items-center gap-1">
+                                    <FiClock size={10} /> {promo.flash_duration_minutes} min
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
+                          <Link href={`/business/promotions/new`} className="p-2 text-accent-500 hover:bg-accent-50 rounded-lg transition-colors">
+                            <FiEdit2 size={16} />
+                          </Link>
                         </div>
-                        <Link href={`/business/promotions/new`} className="p-2 text-accent-500 hover:bg-accent-50 rounded-lg transition-colors">
-                          <FiEdit2 size={16} />
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl border border-yellow-200 shadow-sm text-center py-12">
+                      <FiZap size={40} className="mx-auto mb-3 text-yellow-300" />
+                      <p className="text-gray-500">No tenés promociones flash creadas</p>
+                      <Link href="/business/promotions/new" className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all text-sm shadow-md">
+                        <FiZap size={14} /> Crear tu primera Flash
+                      </Link>
+                    </div>
+                  )}
+                </>
               )}
 
-              {/* All Promotions */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Todas las Promociones</h2>
-                  <Link href="/business/promotions/new" className="btn-accent text-sm flex items-center gap-1">
-                    <FiPlus size={14} /> Nueva
-                  </Link>
-                </div>
-                {promotions.length > 0 ? (
-                  <div className="space-y-3">
-                    {promotions.map((promo) => (
-                      <div key={promo.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold ${
-                            promo.is_flash
-                              ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white'
-                              : 'bg-accent-50 text-accent-500'
-                          }`}>
-                            {promo.is_flash ? <FiZap size={18} /> : (promo.discount_percentage ? `-${promo.discount_percentage}%` : '🎯')}
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 text-sm">{promo.title}</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`badge ${promo.is_active ? 'badge-success' : 'badge-error'}`}>
-                                {promo.is_active ? 'Activa' : 'Inactiva'}
-                              </span>
-                              {promo.is_flash && <span className="badge badge-warning">⚡ Flash</span>}
-                              <span className={`text-xs ${
-                                promo.moderation_status === 'approved' ? 'text-green-600' :
-                                promo.moderation_status === 'rejected' ? 'text-red-500' : 'text-yellow-600'
-                              }`}>
-                                {promo.moderation_status === 'approved' ? '✓ Aprobada' :
-                                 promo.moderation_status === 'rejected' ? '✗ Rechazada' : '⏳ Pendiente'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <Link href={`/business/promotions/new`} className="p-2 text-accent-500 hover:bg-accent-50 rounded-lg transition-colors">
-                          <FiEdit2 size={16} />
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-white rounded-xl border border-gray-100 shadow-sm text-center py-12">
-                    <FiTag size={40} className="mx-auto mb-3 text-gray-300" />
-                    <p className="text-gray-500">No tenés promociones creadas</p>
-                    <Link href="/business/promotions/new" className="btn-accent text-sm mt-4 inline-flex">Crear primera promoción</Link>
-                  </div>
-                )}
-              </div>
-
-              {business && (
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Local</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div><span className="text-gray-500">Nombre:</span> <span className="font-medium">{business.name}</span></div>
-                    <div><span className="text-gray-500">Categoría:</span> <span className="font-medium">{business.category}</span></div>
-                    <div><span className="text-gray-500">Dirección:</span> <span className="font-medium">{business.address}</span></div>
-                    <div><span className="text-gray-500">Ciudad:</span> <span className="font-medium">{business.city}</span></div>
-                    <div><span className="text-gray-500">Teléfono:</span> <span className="font-medium">{business.phone || '—'}</span></div>
-                    <div><span className="text-gray-500">Estado:</span> <span className={`badge ${business.is_active ? 'badge-success' : 'badge-error'}`}>{business.is_active ? 'Activo' : 'Inactivo'}</span></div>
-                  </div>
-                </div>
-              )}
             </div>
           </main>
         </div>
