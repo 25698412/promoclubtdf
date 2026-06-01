@@ -8,15 +8,14 @@ import Link from 'next/link';
 import { LogoImage } from '@/components/ui/LogoImage';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
-  FiHome, FiTag, FiBarChart2, FiSettings, FiLogOut, FiPlus,
-  FiTrendingUp, FiUsers, FiCheckCircle, FiClock, FiMenu, FiX,
-  FiEdit2, FiZap, FiEye,
+  FiHome, FiTag, FiBarChart2, FiLogOut, FiPlus,
+  FiUsers, FiCheckCircle, FiMenu, FiX,
+  FiEdit2, FiEye,
 } from 'react-icons/fi';
 
 export default function BusinessPanelPage() {
   const router = useRouter();
   const { user, profile, loading: authLoading, signOut } = useAuth();
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [business, setBusiness] = useState<any>(null);
@@ -24,12 +23,16 @@ export default function BusinessPanelPage() {
   const [stats, setStats] = useState({ views: 0, redemptions: 0, newCustomers: 0 });
 
   useEffect(() => {
-    // Allow demo mode - load data regardless of auth
     loadData();
   }, [user, authLoading]);
 
   const loadData = async () => {
-    // Load business owned by this user
+    const supabase = createClient();
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     const { data: biz } = await supabase
       .from('businesses')
       .select('*')
@@ -39,7 +42,6 @@ export default function BusinessPanelPage() {
     if (biz) {
       setBusiness(biz);
 
-      // Load promotions for this business
       const { data: promos } = await supabase
         .from('promotions')
         .select('*')
@@ -48,7 +50,6 @@ export default function BusinessPanelPage() {
 
       setPromotions(promos || []);
 
-      // Load stats
       const [viewsRes, redemptionsRes, customersRes] = await Promise.all([
         supabase.from('analytics_events').select('id', { count: 'exact', head: true })
           .eq('entity_type', 'business').eq('entity_id', biz.id).like('event_type', 'view%'),
@@ -84,7 +85,6 @@ export default function BusinessPanelPage() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background flex">
-        {/* Mobile Toggle */}
         <button onClick={() => setSidebarOpen(!sidebarOpen)}
           className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-primary-500 text-white shadow-lg">
           {sidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
@@ -94,7 +94,6 @@ export default function BusinessPanelPage() {
           <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />
         )}
 
-        {/* Sidebar */}
         <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-primary-500 to-primary-700 text-white flex flex-col transform transition-transform duration-300 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}>
@@ -144,7 +143,6 @@ export default function BusinessPanelPage() {
           </div>
         </aside>
 
-        {/* Main Content */}
         <div className="flex-1 flex flex-col min-h-screen">
           <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
             <h1 className="text-lg font-bold text-gray-900">Panel de Comercio</h1>
@@ -153,7 +151,6 @@ export default function BusinessPanelPage() {
 
           <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
             <div className="max-w-7xl mx-auto">
-              {/* Stats */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 {statCards.map((card) => (
                   <div key={card.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
@@ -164,7 +161,6 @@ export default function BusinessPanelPage() {
                 ))}
               </div>
 
-              {/* Promotions */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Mis Promociones</h2>
@@ -187,13 +183,6 @@ export default function BusinessPanelPage() {
                                 {promo.is_active ? 'Activa' : 'Inactiva'}
                               </span>
                               {promo.is_flash && <span className="badge badge-warning">⚡ Flash</span>}
-                              <span className={`badge ${
-                                promo.moderation_status === 'approved' ? 'badge-success' :
-                                promo.moderation_status === 'rejected' ? 'badge-error' : 'badge-warning'
-                              }`}>
-                                {promo.moderation_status === 'approved' ? 'Aprobada' :
-                                 promo.moderation_status === 'rejected' ? 'Rechazada' : 'Pendiente'}
-                              </span>
                             </div>
                           </div>
                         </div>
@@ -212,7 +201,6 @@ export default function BusinessPanelPage() {
                 )}
               </div>
 
-              {/* Business Info */}
               {business && (
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Local</h2>

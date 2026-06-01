@@ -11,7 +11,6 @@ import { FiArrowLeft, FiTag, FiCheckCircle, FiCalendar, FiPercent } from 'react-
 
 export default function AdminNewPromotionPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [businesses, setBusinesses] = useState<any[]>([]);
@@ -22,6 +21,8 @@ export default function AdminNewPromotionPage() {
   });
 
   useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) return;
     supabase.from('businesses').select('id, name').then(({ data }: { data: { id: string; name: string }[] | null }) => {
       if (data) setBusinesses(data);
     });
@@ -33,6 +34,8 @@ export default function AdminNewPromotionPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const supabase = createClient();
+    if (!supabase) return;
     setLoading(true);
 
     const { error } = await supabase.from('promotions').insert({
@@ -57,7 +60,8 @@ export default function AdminNewPromotionPage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const supabase = createClient();
+    if (supabase) await supabase.auth.signOut();
     router.push('/');
   };
 
@@ -138,7 +142,6 @@ export default function AdminNewPromotionPage() {
                     </div>
                   </div>
 
-                  {/* Discount */}
                   <div className="flex items-center gap-3 pb-2 pt-2 border-b border-gray-100">
                     <FiPercent size={16} className="text-accent-500" />
                     <h3 className="font-medium text-gray-900">Descuento</h3>
@@ -162,7 +165,6 @@ export default function AdminNewPromotionPage() {
                     </div>
                   </div>
 
-                  {/* Dates */}
                   <div className="flex items-center gap-3 pb-2 pt-2 border-b border-gray-100">
                     <FiCalendar size={16} className="text-accent-500" />
                     <h3 className="font-medium text-gray-900">Vigencia</h3>

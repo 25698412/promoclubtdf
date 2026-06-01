@@ -9,13 +9,12 @@ import { Card, Badge } from '@/components/ui';
 import { PromotionCard, LoadingSkeleton } from '@/components/features';
 import { MobileNavBar } from '@/components/layout/MobileNavBar';
 import {
-  FiArrowLeft, FiUser, FiMapPin, FiPhone, FiMail, FiLogOut, FiStar, FiTag,
-  FiShoppingBag, FiEdit2, FiHeart, FiGift, FiZap, FiClock, FiTrendingUp, FiNavigation,
+  FiUser, FiMapPin, FiPhone, FiMail, FiLogOut, FiStar, FiTag,
+  FiShoppingBag, FiHeart, FiGift, FiZap, FiClock, FiNavigation,
 } from 'react-icons/fi';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const supabase = createClient();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -33,8 +32,16 @@ export default function ProfilePage() {
 
   const loadData = async () => {
     setLoading(true);
+    const supabase = createClient();
 
-    // Load user session
+    if (!supabase) {
+      // Demo mode sin Supabase
+      setUser({ email: 'demo@promoclubtdf.com' });
+      setProfile({ first_name: 'Usuario', last_name: 'Demo', points: 350, level: 'bronze', phone: '+54 9 2901 123456', city: 'Ushuaia' });
+      setLoading(false);
+      return;
+    }
+
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       setUser(session.user);
@@ -44,7 +51,6 @@ export default function ProfilePage() {
       setGpsEnabled(profileData?.gps_enabled || false);
       setGeofenceRadius(profileData?.geofence_radius_km || 1.5);
 
-      // Load user's recent coupons
       const { data: coupons } = await supabase
         .from('coupons')
         .select('*, promotions(title, discount_percentage), businesses(name)')
@@ -52,20 +58,15 @@ export default function ProfilePage() {
         .order('created_at', { ascending: false }).limit(3);
       setRecentCoupons(coupons || []);
 
-      // Count favorites
       const { count } = await supabase
         .from('favorites').select('*', { count: 'exact', head: true })
         .eq('user_id', session.user.id);
       setFavoritesCount(count || 0);
     } else {
-      // Demo mode
       setUser({ email: 'demo@promoclubtdf.com' });
       setProfile({ first_name: 'Usuario', last_name: 'Demo', points: 350, level: 'bronze', phone: '+54 9 2901 123456', city: 'Ushuaia' });
-      setGpsEnabled(false);
-      setGeofenceRadius(1.5);
     }
 
-    // Load public data
     const [promosRes, flashRes, bannerRes] = await Promise.all([
       supabase.from('promotions').select('*, businesses(name, category, logo_url)')
         .eq('is_active', true).eq('moderation_status', 'approved')
@@ -84,21 +85,24 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const supabase = createClient();
+    if (supabase) await supabase.auth.signOut();
     router.push('/');
   };
 
   const toggleGps = async () => {
     const newValue = !gpsEnabled;
     setGpsEnabled(newValue);
-    if (user) {
+    const supabase = createClient();
+    if (user && supabase) {
       await supabase.from('user_profiles').update({ gps_enabled: newValue }).eq('id', user.id);
     }
   };
 
   const updateGeofenceRadius = async (value: number) => {
     setGeofenceRadius(value);
-    if (user) {
+    const supabase = createClient();
+    if (user && supabase) {
       await supabase.from('user_profiles').update({ geofence_radius_km: value }).eq('id', user.id);
     }
   };
@@ -152,7 +156,6 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold text-gray-900">{profile?.first_name} {profile?.last_name}</h2>
             <p className="text-gray-500 text-sm">{user?.email}</p>
 
-            {/* Level Progress */}
             <div className="mt-4 bg-gray-50 rounded-xl p-3">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-gray-500 flex items-center gap-1"><FiStar size={10} /> {profile?.points || 0} puntos</span>
@@ -172,7 +175,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* GPS & Location Settings - Inline below profile */}
+        {/* GPS Settings */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -353,7 +356,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Logout */}
         <button onClick={handleLogout}
           className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border-2 border-error text-error hover:bg-error-50 transition-colors font-semibold">
           <FiLogOut size={18} /> Cerrar Sesión
