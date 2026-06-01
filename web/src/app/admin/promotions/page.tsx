@@ -16,7 +16,26 @@ export default function AdminPromotionsPage() {
 
   const loadPromotions = async () => {
     const supabase = createClient();
-    if (!supabase) { setLoading(false); return; }
+    if (!supabase) {
+      // Demo mode: show sample data
+      const demoPromos = [
+        { id: 'dp1', title: '50% OFF en Hamburguesas', discount_percentage: 50, is_active: true, is_flash: false, moderation_status: 'approved', created_at: new Date().toISOString(), businesses: { name: 'Burger House' } },
+        { id: 'dp2', title: '⚡ Flash: 2x1 en Bebidas', discount_percentage: null, is_active: true, is_flash: true, flash_duration_minutes: 60, moderation_status: 'pending', created_at: new Date().toISOString(), businesses: { name: 'Café del Centro' } },
+        { id: 'dp3', title: '⚡ Flash: 40% OFF en Postres', discount_percentage: 40, is_active: true, is_flash: true, flash_duration_minutes: 30, moderation_status: 'pending', created_at: new Date().toISOString(), businesses: { name: 'Dulce Tentación' } },
+        { id: 'dp4', title: '30% OFF en Zapatillas', discount_percentage: 30, is_active: true, is_flash: false, moderation_status: 'pending', created_at: new Date().toISOString(), businesses: { name: 'Sport Center' } },
+        { id: 'dp5', title: '20% OFF en Libros', discount_percentage: 20, is_active: true, is_flash: false, moderation_status: 'approved', created_at: new Date().toISOString(), businesses: { name: 'Librería Central' } },
+        { id: 'dp6', title: '⚡ Flash: 50% OFF en Celulares', discount_percentage: 50, is_active: false, is_flash: true, flash_duration_minutes: 120, moderation_status: 'approved', created_at: new Date().toISOString(), businesses: { name: 'Tech Store' } },
+        { id: 'dp7', title: 'Envío Gratis en Pedidos +$5000', discount_percentage: null, is_active: true, is_flash: false, moderation_status: 'rejected', created_at: new Date().toISOString(), businesses: { name: 'Delivery Express' } },
+      ];
+      let filtered = demoPromos;
+      if (filter === 'pending') filtered = demoPromos.filter(p => p.moderation_status === 'pending');
+      else if (filter === 'approved') filtered = demoPromos.filter(p => p.moderation_status === 'approved');
+      else if (filter === 'flash') filtered = demoPromos.filter(p => p.is_flash);
+      else if (filter === 'flash_pending') filtered = demoPromos.filter(p => p.is_flash && p.moderation_status === 'pending');
+      setPromotions(filtered);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     let query = supabase
       .from('promotions')
