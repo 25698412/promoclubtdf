@@ -7,13 +7,14 @@ import { FiPlus, FiEdit2, FiToggleLeft, FiToggleRight } from 'react-icons/fi';
 import Link from 'next/link';
 
 export default function AdminBannersPage() {
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [banners, setBanners] = useState<any[]>([]);
 
   useEffect(() => { loadBanners(); }, []);
 
   const loadBanners = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const { data } = await supabase
       .from('banners')
       .select('*')
@@ -23,6 +24,8 @@ export default function AdminBannersPage() {
   };
 
   const toggleStatus = async (id: string, current: boolean) => {
+    const supabase = createClient();
+    if (!supabase) return;
     await supabase.from('banners').update({ is_active: !current }).eq('id', id);
     loadBanners();
   };

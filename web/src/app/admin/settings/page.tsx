@@ -6,7 +6,6 @@ import { AdminShell } from '@/components/layout/AdminShell';
 import { FiSave, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 export default function AdminSettingsPage() {
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [rules, setRules] = useState<any[]>([]);
@@ -14,6 +13,8 @@ export default function AdminSettingsPage() {
   useEffect(() => { loadRules(); }, []);
 
   const loadRules = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const { data } = await supabase.from('points_rules').select('*').order('created_at');
     setRules(data || []);
     setLoading(false);
@@ -21,12 +22,16 @@ export default function AdminSettingsPage() {
 
   const updateRule = async (id: string, field: string, value: string | number) => {
     setSaving(true);
+    const supabase = createClient();
+    if (!supabase) { setSaving(false); return; }
     await supabase.from('points_rules').update({ [field]: value }).eq('id', id);
     setRules(rules.map((r) => r.id === id ? { ...r, [field]: value } : r));
     setSaving(false);
   };
 
   const addRule = async () => {
+    const supabase = createClient();
+    if (!supabase) return;
     const { data } = await supabase.from('points_rules').insert({
       rule_name: 'Nueva regla',
       points_per_amount: 1,
@@ -38,6 +43,8 @@ export default function AdminSettingsPage() {
   };
 
   const deleteRule = async (id: string) => {
+    const supabase = createClient();
+    if (!supabase) return;
     await supabase.from('points_rules').delete().eq('id', id);
     setRules(rules.filter((r) => r.id !== id));
   };

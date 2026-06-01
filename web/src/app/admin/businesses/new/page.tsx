@@ -11,7 +11,6 @@ import { FiArrowLeft, FiShoppingBag, FiCheckCircle } from 'react-icons/fi';
 
 export default function AdminNewBusinessPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,7 +30,8 @@ export default function AdminNewBusinessPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const { error } = await supabase.from('businesses').insert({
       name: formData.name,
       category: formData.category,
@@ -53,7 +53,8 @@ export default function AdminNewBusinessPage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const supabase = createClient();
+    if (supabase) await supabase.auth.signOut();
     router.push('/');
   };
 

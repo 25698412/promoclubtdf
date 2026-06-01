@@ -11,7 +11,6 @@ import Link from 'next/link';
 export default function AdminBusinessEditPage() {
   const router = useRouter();
   const params = useParams();
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -34,6 +33,8 @@ export default function AdminBusinessEditPage() {
   }, [params.id]);
 
   const loadBusiness = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const { data } = await supabase
       .from('businesses')
       .select('*')
@@ -61,6 +62,8 @@ export default function AdminBusinessEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    const supabase = createClient();
+    if (!supabase) { setSaving(false); return; }
 
     // Extract coordinates from Google Maps URL
     const coords = extractCoordsFromGoogleMapsUrl(formData.google_maps_url);

@@ -10,7 +10,6 @@ import Link from 'next/link';
 export default function AdminBannerEditPage() {
   const router = useRouter();
   const params = useParams();
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -28,6 +27,8 @@ export default function AdminBannerEditPage() {
   useEffect(() => { loadBanner(); }, [params.id]);
 
   const loadBanner = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const { data } = await supabase.from('banners').select('*').eq('id', params.id).single();
     if (data) {
       setFormData({
@@ -47,6 +48,8 @@ export default function AdminBannerEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    const supabase = createClient();
+    if (!supabase) { setSaving(false); return; }
     const { error } = await supabase.from('banners').update({
       ...formData,
       valid_from: formData.valid_from || null,

@@ -12,7 +12,6 @@ import {
 
 export default function BusinessNewPromotionPage() {
   const router = useRouter();
-  const supabase = createClient();
   const { user } = useAuth();
 
   const [business, setBusiness] = useState<any>(null);
@@ -37,6 +36,8 @@ export default function BusinessNewPromotionPage() {
   // Cargar el negocio del usuario logueado
   useEffect(() => {
     if (!user) return;
+    const supabase = createClient();
+    if (!supabase) { setPageLoading(false); return; }
     supabase
       .from('businesses')
       .select('id, name, category, is_active')
@@ -62,6 +63,8 @@ export default function BusinessNewPromotionPage() {
     if (!business) return;
     setLoading(true);
     setError('');
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
 
     const payload: any = {
       title: formData.title.trim(),

@@ -7,7 +7,6 @@ import { FiEye, FiMousePointer, FiShoppingBag, FiTrendingUp, FiUsers, FiTag, FiM
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 export default function AdminAnalyticsPage() {
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState({
     views: 0, clicks: 0, redemptions: 0, totalUsers: 0, totalPromotions: 0, totalBusinesses: 0,
@@ -19,6 +18,8 @@ export default function AdminAnalyticsPage() {
   useEffect(() => { loadMetrics(); }, []);
 
   const loadMetrics = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const [eventsRes, usersRes, promosRes, bizRes, cityBizRes, topPromosRes] = await Promise.all([
       supabase.from('analytics_events').select('event_type, created_at').limit(5000),
       supabase.from('user_profiles').select('id', { count: 'exact', head: true }),

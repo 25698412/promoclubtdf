@@ -10,7 +10,6 @@ import Link from 'next/link';
 export default function AdminPromotionEditPage() {
   const router = useRouter();
   const params = useParams();
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -36,6 +35,8 @@ export default function AdminPromotionEditPage() {
   }, [params.id]);
 
   const loadData = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const [promoRes, bizRes] = await Promise.all([
       supabase.from('promotions').select('*').eq('id', params.id).single(),
       supabase.from('businesses').select('id, name').order('name'),
@@ -66,6 +67,8 @@ export default function AdminPromotionEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    const supabase = createClient();
+    if (!supabase) { setSaving(false); return; }
 
     const updateData: Record<string, unknown> = {
       title: formData.title,

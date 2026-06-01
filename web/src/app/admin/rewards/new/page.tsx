@@ -9,7 +9,6 @@ import Link from 'next/link';
 
 export default function AdminNewRewardPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [businesses, setBusinesses] = useState<any[]>([]);
@@ -23,6 +22,8 @@ export default function AdminNewRewardPage() {
   });
 
   useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) return;
     supabase.from('businesses').select('id, name').order('name').then(({ data }: { data: { id: string; name: string }[] | null }) => {
       if (data) setBusinesses(data);
     });
@@ -31,6 +32,8 @@ export default function AdminNewRewardPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const { error } = await supabase.from('rewards').insert({
       name: formData.name,
       description: formData.description || null,

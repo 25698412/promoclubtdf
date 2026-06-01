@@ -10,7 +10,6 @@ import { FiArrowLeft, FiShoppingBag, FiUser, FiMail, FiPhone, FiMapPin, FiFileTe
 
 export default function BusinessRegisterPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -63,6 +62,8 @@ export default function BusinessRegisterPage() {
     setError('');
 
     try {
+      const supabase = createClient();
+      if (!supabase) { setError('Servicio no disponible'); setLoading(false); return; }
       // Check if user is logged in
       const { data: { session } } = await supabase.auth.getSession();
       const ownerId = session?.user?.id || null;

@@ -7,13 +7,14 @@ import { FiPlus, FiEdit2, FiGift } from 'react-icons/fi';
 import Link from 'next/link';
 
 export default function AdminRewardsPage() {
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [rewards, setRewards] = useState<any[]>([]);
 
   useEffect(() => { loadRewards(); }, []);
 
   const loadRewards = async () => {
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     const { data } = await supabase
       .from('rewards')
       .select('*, businesses(name)')

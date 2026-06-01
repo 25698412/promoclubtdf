@@ -6,7 +6,6 @@ import { AdminShell } from '@/components/layout/AdminShell';
 import { FiCheck, FiX, FiShoppingBag, FiMapPin, FiMail, FiPhone, FiClock } from 'react-icons/fi';
 
 export default function AdminVerificationsPage() {
-  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [filter, setFilter] = useState('pending');
@@ -15,6 +14,8 @@ export default function AdminVerificationsPage() {
 
   const loadBusinesses = async () => {
     setLoading(true);
+    const supabase = createClient();
+    if (!supabase) { setLoading(false); return; }
     let query = supabase
       .from('businesses')
       .select('*')
@@ -29,6 +30,8 @@ export default function AdminVerificationsPage() {
   };
 
   const updateVerification = async (businessId: string, isActive: boolean) => {
+    const supabase = createClient();
+    if (!supabase) return;
     await supabase
       .from('businesses')
       .update({ is_active: isActive })
@@ -108,8 +111,8 @@ export default function AdminVerificationsPage() {
                       </button>
                       <button
                         onClick={() => {
-                          // Deactivate (reject) the business
-                          supabase.from('businesses').delete().eq('id', biz.id).then(() => loadBusinesses());
+                          const supabase = createClient();
+                          if (supabase) supabase.from('businesses').delete().eq('id', biz.id).then(() => loadBusinesses());
                         }}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-error-50 text-error rounded-lg text-sm font-medium hover:bg-error-100 transition-colors"
                       >

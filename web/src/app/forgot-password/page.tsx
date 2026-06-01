@@ -7,7 +7,6 @@ import { FiMail, FiArrowLeft, FiCheckCircle } from 'react-icons/fi';
 import { LogoImage } from '@/components/ui/LogoImage';
 
 export default function ForgotPasswordPage() {
-  const supabase = createClient();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -17,6 +16,8 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    const supabase = createClient();
+    if (!supabase) { setError('Servicio no disponible'); setLoading(false); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
