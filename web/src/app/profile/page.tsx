@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -10,8 +10,9 @@ import { PromotionCard, LoadingSkeleton } from '@/components/features';
 import { MobileNavBar } from '@/components/layout/MobileNavBar';
 import {
   FiUser, FiMapPin, FiPhone, FiMail, FiLogOut, FiStar, FiTag,
-  FiShoppingBag, FiHeart, FiGift, FiZap, FiClock, FiNavigation,
+  FiShoppingBag, FiHeart, FiGift, FiZap, FiClock, FiNavigation, FiCamera,
 } from 'react-icons/fi';
+import { uploadToR2 } from '@/lib/upload';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -25,6 +26,9 @@ export default function ProfilePage() {
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [gpsEnabled, setGpsEnabled] = useState(false);
   const [geofenceRadius, setGeofenceRadius] = useState(1.5);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadData();
@@ -48,6 +52,7 @@ export default function ProfilePage() {
       const { data: profileData } = await supabase
         .from('user_profiles').select('*').eq('id', session.user.id).single();
       setProfile(profileData);
+      setAvatarUrl(profileData?.avatar_url || null);
       setGpsEnabled(profileData?.gps_enabled || false);
       setGeofenceRadius(profileData?.geofence_radius_km || 1.5);
 
@@ -99,6 +104,33 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Preview inmediato
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarUrl(previewUrl);
+    setUploadingAvatar(true);
+
+    try {
+      const publicUrl = await uploadToR2(file, 'avatars');
+      setAvatarUrl(publicUrl);
+
+      // Guardar en user_profiles
+      const supabase = createClient();
+      if (supabase && user?.id) {
+        await supabase.from('user_profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+      }
+    } catch (err) {
+      console.error('Error subiendo avatar:', err);
+      // Revertir al avatar anterior
+      setAvatarUrl(profile?.avatar_url || null);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const updateGeofenceRadius = async (value: number) => {
     setGeofenceRadius(value);
     const supabase = createClient();
@@ -144,10 +176,35 @@ export default function ProfilePage() {
           <div className={`h-24 bg-gradient-to-r ${levelGrad}`} />
           <div className="px-6 pb-6">
             <div className="flex items-end justify-between -mt-10 mb-4">
-              <div className="w-20 h-20 bg-white rounded-2xl border-4 border-white shadow-md flex items-center justify-center">
-                <span className="text-2xl font-bold text-primary-500">
-                  {profile?.first_name?.charAt(0)}{profile?.last_name?.charAt(0)}
-                </span>
+              <div className="relative">
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
+                <div className="w-20 h-20 bg-white rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl font-bold text-primary-500">
+                      {profile?.first_name?.charAt(0)}{profile?.last_name?.charAt(0)}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="absolute -bottom-1 -right-1 w-7 h-7 bg-accent-500 hover:bg-accent-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors disabled:opacity-60"
+                  title="Cambiar foto"
+                >
+                  {uploadingAvatar ? (
+                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <FiCamera size={13} />
+                  )}
+                </button>
               </div>
               <span className="flex items-center gap-1.5 text-sm font-medium text-gray-600 bg-white/80 backdrop-blur px-3 py-1 rounded-full shadow-sm">
                 {levelEmoji} Nivel {levelName}

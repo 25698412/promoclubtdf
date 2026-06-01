@@ -146,7 +146,12 @@ export default function BusinessPanelPage() {
         <div className="flex-1 flex flex-col min-h-screen">
           <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
             <h1 className="text-lg font-bold text-gray-900">Panel de Comercio</h1>
-            <span className="text-sm text-gray-500">{business?.name || ''}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">{business?.name || ''}</span>
+              <Link href="/" title="Ir al inicio" className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-accent-50 hover:text-accent-500 text-gray-500 transition-colors">
+                <FiHome size={18} />
+              </Link>
+            </div>
           </header>
 
           <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
