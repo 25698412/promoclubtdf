@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FiSmartphone, FiTag, FiShoppingBag, FiTrendingUp, FiMapPin, FiStar, FiUsers, FiAward } from 'react-icons/fi';
+import { FiSmartphone, FiTag, FiShoppingBag, FiTrendingUp, FiMapPin, FiStar, FiUsers, FiAward, FiNavigation } from 'react-icons/fi';
 import { MobileNavBar } from '@/components/layout/MobileNavBar';
 import { LogoImage } from '@/components/ui/LogoImage';
 
@@ -89,12 +89,25 @@ export default function Home() {
             {/* Navigation */}
             <nav className="flex items-center gap-2 sm:gap-4">
               <Link
+                href="/map"
+                className="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-accent-500 transition-colors rounded-lg hover:bg-gray-50 hidden sm:inline-flex items-center gap-1.5"
+              >
+                <FiMapPin size={14} />
+                Mapa
+              </Link>
+              <Link
+                href="/businesses"
+                className="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-accent-500 transition-colors rounded-lg hover:bg-gray-50 hidden sm:inline-flex items-center gap-1.5"
+              >
+                Comercios
+              </Link>
+              <Link
                 href="/admin"
                 className="px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg hover:shadow-md transition-all hidden sm:inline-flex items-center gap-1.5"
                 style={{ boxShadow: '0 2px 8px rgba(27,58,92,0.2)' }}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                Panel Admin
+                Admin
               </Link>
               <Link
                 href="/business/panel"
@@ -103,14 +116,6 @@ export default function Home() {
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 Comercio
-              </Link>
-              <Link
-                href="/profile"
-                className="px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-accent-500 to-accent-600 rounded-lg hover:shadow-md transition-all hidden sm:inline-flex items-center gap-1.5"
-                style={{ boxShadow: '0 2px 8px rgba(245,130,32,0.2)' }}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                Perfil
               </Link>
               <Link
                 href="/login"
@@ -365,6 +370,101 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Map Preview Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="animate-fade-in-up">
+              <span className="badge-accent mb-4 inline-block">
+                <FiMapPin size={14} className="inline -mt-0.5" /> Ubicación
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-bold text-primary-500 mb-4">
+                Encontrá comercios cerca tuyo
+              </h2>
+              <p className="text-lg text-gray-500 mb-6">
+                Explorá el mapa interactivo y descubrí todos los locales adheridos a Promo Club TDF en Tierra del Fuego. Filtrá por categoría, conocé las promociones activas y planificá tu próxima compra.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-gray-600">
+                  <div className="w-6 h-6 bg-accent-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FiMapPin size={12} className="text-accent-500" />
+                  </div>
+                  <span className="text-sm">Mapa interactivo con todos los comercios adheridos</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-600">
+                  <div className="w-6 h-6 bg-accent-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FiTag size={12} className="text-accent-500" />
+                  </div>
+                  <span className="text-sm">Promociones flash visibles directamente desde el mapa</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-600">
+                  <div className="w-6 h-6 bg-accent-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FiNavigation size={12} className="text-accent-500" />
+                  </div>
+                  <span className="text-sm">Ubicá tu posición y encontrá locales cercanos</span>
+                </li>
+              </ul>
+              <Link href="/map" className="btn-accent inline-flex items-center gap-2" style={{ boxShadow: '0 4px 12px rgba(245,130,32,0.3)' }}>
+                <FiMapPin size={18} />
+                Abrir Mapa
+              </Link>
+            </div>
+
+            {/* Right - Map Preview Card */}
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <Link href="/map" className="block group">
+                <div className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-100 group-hover:shadow-2xl transition-shadow duration-300">
+                  {/* Static map preview */}
+                  <div className="w-full h-80 bg-gradient-to-br from-primary-50 via-accent-50 to-primary-100 relative flex items-center justify-center">
+                    {/* Decorative map pins */}
+                    <div className="absolute top-12 left-16 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-lg group-hover:scale-110 transition-transform" style={{ animationDelay: '0.1s' }}>🏪</div>
+                    <div className="absolute top-20 right-20 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform" style={{ animationDelay: '0.3s' }}>📍</div>
+                    <div className="absolute bottom-16 left-24 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-lg group-hover:scale-110 transition-transform" style={{ animationDelay: '0.5s' }}>🏪</div>
+                    <div className="absolute bottom-24 right-16 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-lg group-hover:scale-110 transition-transform" style={{ animationDelay: '0.2s' }}>🏪</div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📍</div>
+
+                    {/* Grid lines */}
+                    <div className="absolute inset-0 opacity-10">
+                      <div className="absolute top-1/4 left-0 right-0 h-px bg-gray-400" />
+                      <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-400" />
+                      <div className="absolute top-3/4 left-0 right-0 h-px bg-gray-400" />
+                      <div className="absolute left-1/4 top-0 bottom-0 w-px bg-gray-400" />
+                      <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-400" />
+                      <div className="absolute left-3/4 top-0 bottom-0 w-px bg-gray-400" />
+                    </div>
+
+                    {/* Center label */}
+                    <div className="relative bg-white/90 backdrop-blur-sm rounded-xl shadow-lg px-4 py-2">
+                      <p className="text-sm font-bold text-primary-500 flex items-center gap-2">
+                        <FiMapPin size={16} className="text-accent-500" />
+                        Tierra del Fuego
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom bar */}
+                  <div className="bg-white p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-accent-100 rounded-lg flex items-center justify-center">
+                        <FiMapPin size={14} className="text-accent-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Mapa de Comercios</p>
+                        <p className="text-xs text-gray-400">Ushuaia • Río Grande • Tolhuin</p>
+                      </div>
+                    </div>
+                    <span className="text-accent-500 font-semibold text-sm group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                      Ver mapa →
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Promotions */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -539,6 +639,8 @@ export default function Home() {
               <h4 className="font-semibold mb-4">Usuarios</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link href="/promotions" className="hover:text-accent-400 transition-colors">Promociones</Link></li>
+                <li><Link href="/map" className="hover:text-accent-400 transition-colors">Mapa de Comercios</Link></li>
+                <li><Link href="/businesses" className="hover:text-accent-400 transition-colors">Comercios</Link></li>
                 <li><Link href="/coupons" className="hover:text-accent-400 transition-colors">Mis Cupones</Link></li>
                 <li><Link href="/favorites" className="hover:text-accent-400 transition-colors">Favoritos</Link></li>
               </ul>

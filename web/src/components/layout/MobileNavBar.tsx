@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FiHome, FiSearch, FiTag, FiHeart, FiUser } from 'react-icons/fi';
+import { FiHome, FiSearch, FiTag, FiHeart, FiUser, FiMapPin } from 'react-icons/fi';
 import { LogoImage } from '../ui/LogoImage';
 
 interface NavItem {
@@ -15,6 +15,7 @@ interface NavItem {
 const leftItems: NavItem[] = [
   { href: '/', label: 'Inicio', icon: FiHome },
   { href: '/promotions', label: 'Explorar', icon: FiSearch },
+  { href: '/map', label: 'Mapa', icon: FiMapPin },
 ];
 
 const rightItems: NavItem[] = [

@@ -161,7 +161,7 @@ export default function MapPage() {
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 h-16">
-            <Link href="/dashboard" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <Link href="/" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <FiArrowLeft size={20} className="text-gray-600" />
             </Link>
             <div className="flex items-center gap-2">

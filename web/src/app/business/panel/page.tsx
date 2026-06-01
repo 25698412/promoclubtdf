@@ -11,7 +11,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   FiHome, FiTag, FiBarChart2, FiLogOut, FiPlus,
   FiUsers, FiCheckCircle, FiMenu, FiX,
-  FiEdit2, FiEye, FiCamera,
+  FiEdit2, FiEye, FiCamera, FiZap, FiClock,
 } from 'react-icons/fi';
 
 export default function BusinessPanelPage() {
@@ -128,12 +128,17 @@ export default function BusinessPanelPage() {
             {[
               { icon: <FiHome size={18} />, label: 'Dashboard', href: '/business/panel' },
               { icon: <FiTag size={18} />, label: 'Mis Promociones', href: '/business/panel?tab=promos' },
+              { icon: <FiZap size={18} />, label: 'Promociones Flash', href: '/business/panel?tab=flash', highlight: true },
               { icon: <FiCamera size={18} />, label: 'Escanear QR', href: '/business/scanner' },
               { icon: <FiCreditCard size={18} />, label: 'Membresía', href: '/business/membership' },
               { icon: <FiBarChart2 size={18} />, label: 'Estadísticas', href: '/business/panel?tab=stats' },
             ].map((item) => (
               <Link key={item.href} href={item.href}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  (item as any).highlight
+                    ? 'text-yellow-300 hover:text-yellow-200 hover:bg-yellow-500/10 font-medium'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                }`}>
                 {item.icon} {item.label}
               </Link>
             ))}
@@ -169,9 +174,85 @@ export default function BusinessPanelPage() {
                 ))}
               </div>
 
+              {/* Flash Promotions Quick Action */}
+              <div className="mb-8 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl border border-yellow-200 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                      <FiZap size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900">⚡ Promociones Flash</h3>
+                      <p className="text-sm text-gray-600 mt-0.5">
+                        Creá ofertas por tiempo limitado para generar urgencia y atraer más clientes.
+                      </p>
+                      {promotions.filter(p => p.is_flash && p.is_active).length > 0 && (
+                        <p className="text-xs text-yellow-700 mt-1 font-medium">
+                          <FiClock size={10} className="inline -mt-0.5" /> {promotions.filter(p => p.is_flash && p.is_active).length} flash activa(s)
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Link
+                    href="/business/promotions/new"
+                    className="px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all text-sm flex items-center gap-2 shadow-md whitespace-nowrap"
+                  >
+                    <FiZap size={14} /> Crear Flash
+                  </Link>
+                </div>
+              </div>
+
+              {/* Flash Promotions Active */}
+              {promotions.filter(p => p.is_flash).length > 0 && (
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FiZap size={18} className="text-yellow-500" />
+                    <h2 className="text-lg font-semibold text-gray-900">Promociones Flash</h2>
+                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">
+                      {promotions.filter(p => p.is_flash).length}
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    {promotions.filter(p => p.is_flash).map((promo) => (
+                      <div key={promo.id} className="bg-white rounded-xl border border-yellow-200 shadow-sm p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center text-white font-bold shadow-sm">
+                            <FiZap size={20} />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900 text-sm">{promo.title}</h3>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              <span className={`badge ${promo.is_active ? 'badge-success' : 'badge-error'}`}>
+                                {promo.is_active ? 'Activa' : 'Inactiva'}
+                              </span>
+                              <span className={`badge ${
+                                promo.moderation_status === 'approved' ? 'badge-success' :
+                                promo.moderation_status === 'rejected' ? 'badge-error' : 'badge-warning'
+                              }`}>
+                                {promo.moderation_status === 'approved' ? 'Aprobada' :
+                                 promo.moderation_status === 'rejected' ? 'Rechazada' : '⏳ Pendiente'}
+                              </span>
+                              {promo.flash_duration_minutes && (
+                                <span className="text-xs text-gray-400 flex items-center gap-1">
+                                  <FiClock size={10} /> {promo.flash_duration_minutes} min
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <Link href={`/business/promotions/new`} className="p-2 text-accent-500 hover:bg-accent-50 rounded-lg transition-colors">
+                          <FiEdit2 size={16} />
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* All Promotions */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Mis Promociones</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">Todas las Promociones</h2>
                   <Link href="/business/promotions/new" className="btn-accent text-sm flex items-center gap-1">
                     <FiPlus size={14} /> Nueva
                   </Link>
@@ -181,8 +262,12 @@ export default function BusinessPanelPage() {
                     {promotions.map((promo) => (
                       <div key={promo.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-accent-50 rounded-xl flex items-center justify-center text-accent-500 font-bold">
-                            {promo.discount_percentage ? `-${promo.discount_percentage}%` : '🎯'}
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold ${
+                            promo.is_flash
+                              ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white'
+                              : 'bg-accent-50 text-accent-500'
+                          }`}>
+                            {promo.is_flash ? <FiZap size={18} /> : (promo.discount_percentage ? `-${promo.discount_percentage}%` : '🎯')}
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900 text-sm">{promo.title}</h3>
@@ -191,6 +276,13 @@ export default function BusinessPanelPage() {
                                 {promo.is_active ? 'Activa' : 'Inactiva'}
                               </span>
                               {promo.is_flash && <span className="badge badge-warning">⚡ Flash</span>}
+                              <span className={`text-xs ${
+                                promo.moderation_status === 'approved' ? 'text-green-600' :
+                                promo.moderation_status === 'rejected' ? 'text-red-500' : 'text-yellow-600'
+                              }`}>
+                                {promo.moderation_status === 'approved' ? '✓ Aprobada' :
+                                 promo.moderation_status === 'rejected' ? '✗ Rechazada' : '⏳ Pendiente'}
+                              </span>
                             </div>
                           </div>
                         </div>
