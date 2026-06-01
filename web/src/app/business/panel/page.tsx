@@ -11,7 +11,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   FiHome, FiTag, FiBarChart2, FiLogOut, FiPlus,
   FiUsers, FiCheckCircle, FiMenu, FiX,
-  FiEdit2, FiEye,
+  FiEdit2, FiEye, FiCamera,
 } from 'react-icons/fi';
 
 export default function BusinessPanelPage() {
@@ -128,6 +128,7 @@ export default function BusinessPanelPage() {
             {[
               { icon: <FiHome size={18} />, label: 'Dashboard', href: '/business/panel' },
               { icon: <FiTag size={18} />, label: 'Mis Promociones', href: '/business/panel?tab=promos' },
+              { icon: <FiCamera size={18} />, label: 'Escanear QR', href: '/business/scanner' },
               { icon: <FiCreditCard size={18} />, label: 'Membresía', href: '/business/membership' },
               { icon: <FiBarChart2 size={18} />, label: 'Estadísticas', href: '/business/panel?tab=stats' },
             ].map((item) => (
