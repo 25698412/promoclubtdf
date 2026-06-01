@@ -67,6 +67,9 @@ CREATE TABLE IF NOT EXISTS businesses (
   city TEXT DEFAULT 'Ushuaia' CHECK (city IN ('Ushuaia', 'Río Grande', 'Tolhuin')),
   is_active BOOLEAN DEFAULT true,
   is_founder BOOLEAN DEFAULT false, -- Pines dorados para fundadores
+  -- Membresía del comercio
+  membership_plan_id UUID,
+  membership_expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -185,8 +188,54 @@ CREATE TABLE IF NOT EXISTS points_rules (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+);
+
+-- Planes de membresía para comercios
+CREATE TABLE IF NOT EXISTS membership_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL, -- plata, oro, platino
+  description TEXT,
+  price_ARS DECIMAL(12,2) NOT NULL,
+  duration_months INTEGER NOT NULL DEFAULT 1,
+  -- Beneficios del plan (JSON para flexibilidad)
+  benefits JSONB DEFAULT '[]'::jsonb,
+  max_promotions INTEGER DEFAULT 5,
+  is_featured BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+  display_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Pagos de membresía
+CREATE TABLE IF NOT EXISTS membership_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
+  plan_id UUID REFERENCES membership_plans(id),
+  amount_ARS DECIMAL(12,2) NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'refunded')),
+  mercadopago_payment_id TEXT,
+  mercadopago_preference_id TEXT,
+  payment_method TEXT,
+  paid_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Configuración global de la plataforma (key-value)
+CREATE TABLE IF NOT EXISTS platform_settings (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Valores por defecto de niveles
+INSERT INTO platform_settings (key, value) VALUES
+  ('level_thresholds', '{"silver": 1000, "gold": 5000}'::jsonb)
+ON CONFLICT (key) DO NOTHING;
+
 -- ============================================
--- ÍNDICES
+-- ÝNDICES
 -- ============================================
 
 CREATE INDEX IF NOT EXISTS idx_user_profiles_level ON user_profiles(level);
@@ -229,6 +278,7 @@ ALTER TABLE rewards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reward_redemptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE points_rules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE platform_settings ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- POLICIES - user_profiles
@@ -419,6 +469,22 @@ CREATE POLICY "Public view points rules" ON points_rules
   FOR SELECT USING (is_active = true);
 
 CREATE POLICY "Admin manage points rules" ON points_rules
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM auth.users
+      WHERE auth.users.id = auth.uid()
+      AND auth.users.raw_user_meta_data->>'role' = 'admin'
+    )
+  );
+
+-- ============================================
+-- POLICIES - platform_settings
+-- ============================================
+
+CREATE POLICY "Public view platform settings" ON platform_settings
+  FOR SELECT USING (true);
+
+CREATE POLICY "Admin manage platform settings" ON platform_settings
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM auth.users

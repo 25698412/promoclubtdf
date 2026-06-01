@@ -140,6 +140,16 @@ serve(async (req: Request) => {
       totalPoints = 10;
     }
 
+    // Fetch configurable level thresholds from platform_settings
+    const { data: levelSettings } = await supabase
+      .from('platform_settings')
+      .select('value')
+      .eq('key', 'level_thresholds')
+      .single();
+
+    const silverThreshold = levelSettings?.value?.silver ?? 1000;
+    const goldThreshold = levelSettings?.value?.gold ?? 5000;
+
     // Add points to user profile
     const { data: userProfile } = await supabase
       .from('user_profiles')
@@ -150,10 +160,10 @@ serve(async (req: Request) => {
     if (userProfile) {
       const newPoints = (userProfile.points || 0) + totalPoints;
 
-      // Determine new level
+      // Determine new level using configurable thresholds
       let newLevel = userProfile.level;
-      if (newPoints >= 5000) newLevel = 'gold';
-      else if (newPoints >= 1000) newLevel = 'silver';
+      if (newPoints >= goldThreshold) newLevel = 'gold';
+      else if (newPoints >= silverThreshold) newLevel = 'silver';
 
       await supabase
         .from('user_profiles')
