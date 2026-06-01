@@ -12,12 +12,17 @@ interface AdminShellProps {
 
 export function AdminShell({ children }: AdminShellProps) {
   const router = useRouter();
-  const supabase = createClient();
   const [ready, setReady] = useState(false);
   const [userName, setUserName] = useState('Admin');
 
   useEffect(() => {
-    // MODO DEMO: Acceso público
+    const supabase = createClient();
+    // Sin Supabase (demo/build sin env vars), acceso directo
+    if (!supabase) {
+      setUserName('Admin Demo');
+      setReady(true);
+      return;
+    }
     supabase.auth.getSession().then(({ data: { session } }: { data: { session: { user: { user_metadata?: Record<string, string>; email?: string } } | null } }) => {
       if (session && session.user.user_metadata?.role === 'admin') {
         setUserName(
@@ -30,10 +35,11 @@ export function AdminShell({ children }: AdminShellProps) {
       }
       setReady(true);
     });
-  }, [supabase]);
+  }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const supabase = createClient();
+    if (supabase) await supabase.auth.signOut();
     router.push('/');
   };
 
